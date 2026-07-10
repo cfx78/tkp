@@ -1,8 +1,8 @@
-import dynamicImport from 'next/dynamic';
+import dynamic from 'next/dynamic';
 
-export const dynamic = 'force-static';
+export { metadata, viewport } from 'next-sanity/studio';
 
-const StudioClient = dynamicImport(() => import('@/src/components/studio-client'), { ssr: false });
+const StudioClient = dynamic(() => import('@/src/components/studio-client'), { ssr: false });
 
 export default function StudioPage() {
   return <StudioClient />;

@@ -1,37 +1,14 @@
-import { defineType, defineField } from 'sanity';
+import { defineField, defineType } from 'sanity';
+import { nsfwFields, publishedAtField } from './sharedFields';
 
-export default defineType({
-  name: 'quote',
-  title: 'Quote',
-  type: 'document',
-  fields: [
-    defineField({
-      name: 'text',
-      title: 'Text',
-      type: 'text',
-      validation: (Rule) => Rule.required().min(1)
-    }),
-    defineField({
-      name: 'author',
-      title: 'Author',
-      type: 'string'
-    }),
-    defineField({
-      name: 'source',
-      title: 'Source',
-      type: 'string'
-    }),
-    defineField({
-      name: 'status',
-      title: 'Status',
-      type: 'string',
-      initialValue: 'draft',
-      options: { list: [{ title: 'Draft', value: 'draft' }, { title: 'Published', value: 'published' }] }
-    }),
-    defineField({
-      name: 'publishedAt',
-      title: 'Published At',
-      type: 'datetime'
-    })
-  ]
-});
+export default defineType({ name: 'quote', title: 'Quote', type: 'document', fields: [
+  defineField({ name: 'quoteText', title: 'Quote Text', type: 'text', validation: (Rule) => Rule.required() }),
+  defineField({ name: 'person', title: 'Person', type: 'string', validation: (Rule) => Rule.required() }),
+  defineField({ name: 'sourceTitle', title: 'Source Title', type: 'string' }),
+  defineField({ name: 'sourceUrl', title: 'Source URL', type: 'url' }),
+  defineField({ name: 'foundViaLink', title: 'Found Via Link', type: 'reference', to: [{ type: 'link' }] }),
+  defineField({ name: 'tags', title: 'Tags', type: 'array', of: [{ type: 'reference', to: [{ type: 'tag' }] }] }),
+  defineField({ name: 'relatedFixations', title: 'Related Fixations', type: 'array', of: [{ type: 'reference', to: [{ type: 'fixation' }] }] }),
+  defineField({ name: 'relatedLinks', title: 'Related Links', type: 'array', of: [{ type: 'reference', to: [{ type: 'link' }] }] }),
+  ...nsfwFields, publishedAtField
+] });
