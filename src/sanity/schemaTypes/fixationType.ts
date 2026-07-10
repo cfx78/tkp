@@ -11,6 +11,12 @@ export default defineType({ name: 'fixation', title: 'Fixation', type: 'document
     { title: 'Active', value: 'active' }, { title: 'Sleeping', value: 'sleeping' }, { title: 'Archived', value: 'archived' }
   ] }, initialValue: 'active' }),
   defineField({ name: 'isCore', title: 'Core Fixation', type: 'boolean', initialValue: false }),
+  defineField({ name: 'pinnedLogs', title: 'Pinned Logs', type: 'array', of: [{ type: 'reference', to: [{ type: 'log' }] }] }),
+  defineField({ name: 'pinnedLinks', title: 'Pinned Links', type: 'array', of: [{ type: 'reference', to: [{ type: 'link' }] }] }),
+  defineField({ name: 'pinnedPlaylists', title: 'Pinned Playlists', type: 'array', of: [{ type: 'reference', to: [{ type: 'playlist' }] }] }),
+  defineField({ name: 'pinnedQuotes', title: 'Pinned Quotes', type: 'array', of: [{ type: 'reference', to: [{ type: 'quote' }] }] }),
+  defineField({ name: 'relatedBeats', title: 'Related Beats', type: 'array', of: [{ type: 'reference', to: [{ type: 'beat' }] }] }),
+  defineField({ name: 'relatedReleases', title: 'Related Releases', type: 'array', of: [{ type: 'reference', to: [{ type: 'release' }] }] }),
   defineField({ name: 'tags', title: 'Tags', type: 'array', of: [{ type: 'reference', to: [{ type: 'tag' }] }] }),
   ...nsfwFields
 ] });

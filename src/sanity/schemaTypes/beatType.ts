@@ -18,6 +18,10 @@ export default defineType({
     defineField({ name: 'shortNote', title: 'Short Note', type: 'text', rows: 3 }),
     defineField({ name: 'tags', title: 'Tags', type: 'array', of: [{ type: 'reference', to: [{ type: 'tag' }] }] }),
     defineField({ name: 'relatedFixations', title: 'Related Fixations', type: 'array', of: [{ type: 'reference', to: [{ type: 'fixation' }] }] }),
+    defineField({ name: 'relatedLogs', title: 'Related Logs', type: 'array', of: [{ type: 'reference', to: [{ type: 'log' }] }] }),
+    defineField({ name: 'relatedLinks', title: 'Related Links', type: 'array', of: [{ type: 'reference', to: [{ type: 'link' }] }] }),
+    defineField({ name: 'relatedPlaylists', title: 'Related Playlists', type: 'array', of: [{ type: 'reference', to: [{ type: 'playlist' }] }] }),
+    defineField({ name: 'relatedQuotes', title: 'Related Quotes', type: 'array', of: [{ type: 'reference', to: [{ type: 'quote' }] }] }),
     defineField({ name: 'releaseRefs', title: 'Releases', type: 'array', of: [{ type: 'reference', to: [{ type: 'release' }] }] }),
     defineField({ name: 'versions', title: 'Context / Versions', type: 'array', of: [{ type: 'object', fields: [
       defineField({ name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() }),
