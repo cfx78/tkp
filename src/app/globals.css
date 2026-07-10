@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply min-h-screen bg-ink text-mist antialiased;
+  background-image: radial-gradient(circle at top left, rgba(91, 124, 255, 0.16), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(255, 138, 61, 0.12), transparent 30%);
+}
+
+* {
+  @apply box-border;
+}
+
+::selection {
+  @apply bg-cobalt/40 text-mist;
+}
