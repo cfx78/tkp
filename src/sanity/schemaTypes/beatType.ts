@@ -6,7 +6,13 @@ export default defineType({
   fields: [
     defineField({ name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() }),
     defineField({ name: 'slug', title: 'Slug', type: 'slug', options: { source: 'title' } }),
-    defineField({ name: 'audioUrl', title: 'R2 Audio URL', type: 'url', validation: (Rule) => Rule.required() }),
+    defineField({
+      name: 'audioObjectKey',
+      title: 'R2 Audio Object Key',
+      description: 'R2 object key only, for example beats/test-beat.mp3. Do not paste a public URL.',
+      type: 'string',
+      validation: (Rule) => Rule.required()
+    }),
     defineField({ name: 'lane', title: 'Lane', type: 'reference', to: [{ type: 'lane' }], validation: (Rule) => Rule.required() }),
     defineField({ name: 'coverArt', title: 'Cover Art', type: 'image' }),
     defineField({ name: 'status', title: 'Status', type: 'string', options: { list: [
@@ -25,7 +31,13 @@ export default defineType({
     defineField({ name: 'releaseRefs', title: 'Releases', type: 'array', of: [{ type: 'reference', to: [{ type: 'release' }] }] }),
     defineField({ name: 'versions', title: 'Context / Versions', type: 'array', of: [{ type: 'object', fields: [
       defineField({ name: 'title', title: 'Title', type: 'string', validation: (Rule) => Rule.required() }),
-      defineField({ name: 'audioUrl', title: 'R2 Audio URL', type: 'url', validation: (Rule) => Rule.required() }),
+      defineField({
+        name: 'audioObjectKey',
+        title: 'R2 Audio Object Key',
+        description: 'R2 object key only, for example beats/test-beat-version.mp3. Do not paste a public URL.',
+        type: 'string',
+        validation: (Rule) => Rule.required()
+      }),
       defineField({ name: 'note', title: 'Note', type: 'text' }),
       defineField({ name: 'versionType', title: 'Version Type', type: 'string' }),
       defineField({ name: 'createdAt', title: 'Created At', type: 'datetime' }),

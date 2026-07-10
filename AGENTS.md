@@ -109,7 +109,11 @@ Sanity stores content metadata, images, schemas, and references.
 
 Cloudflare R2 stores beat audio files.
 
-Sanity beat documents should store R2 audio URLs.
+The Cloudflare R2 bucket remains private. Store listening-copy MP3 files only, not masters, stems, or project files.
+
+Sanity beat documents and beat version/context entries should store an `audioObjectKey`, such as `beats/test-beat.mp3`, not a public audio URL.
+
+Playback will use temporary signed GET URLs generated server-side. Keep all R2 credentials server-side, never expose them through `NEXT_PUBLIC_` variables, and do not enable public bucket access. Do not store R2 credentials in Sanity.
 
 ---
 
@@ -201,7 +205,7 @@ Main Library includes:
 Required beat fields:
 
 * title
-* audioUrl
+* audioObjectKey
 * lane
 
 Beat cover art is optional.

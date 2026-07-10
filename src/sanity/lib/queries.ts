@@ -19,7 +19,7 @@ export const homepageSettingsQuery = groq`*[_type == "homepageSettings"][0]{
 }`;
 
 export const latestBeatQuery = groq`*[_type == "beat" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
-  _id, title, "slug": slug.current, audioUrl, status, shortNote, publishedAt,
+  _id, title, "slug": slug.current, audioObjectKey, status, shortNote, publishedAt,
   coverArt${imageProjection},
   lane->{_id, name, "slug": slug.current, primaryColor, fallbackCoverArt${imageProjection}}
 }`;
