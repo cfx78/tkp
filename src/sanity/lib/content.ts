@@ -2,11 +2,16 @@ import { sanityClient } from './client';
 
 export async function fetchSanity<T>(query: string, fallback: T): Promise<T> {
   try {
-    return await sanityClient.fetch<T>(query, {}, { next: { revalidate: 60 } });
-  } catch {
-    console.warn('Sanity content unavailable; rendering the configured fallback.');
+    return await sanityClient.fetch<T>(query, {}, { cache: 'no-store' });
+  } catch (error) {
+    if (isNextDynamicSignal(error)) throw error;
+    console.error('Sanity content request failed; rendering the configured fallback.', error);
     return fallback;
   }
+}
+
+function isNextDynamicSignal(error: unknown): error is { digest: string } {
+  return typeof error === 'object' && error !== null && 'digest' in error && error.digest === 'DYNAMIC_SERVER_USAGE';
 }
 
 export type ImageValue = {

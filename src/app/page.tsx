@@ -1,4 +1,5 @@
 import { fetchSanity, type FixationSummary, type HomepageSettings } from '@/src/sanity/lib/content';
+import { SpotifyPlaylistEmbed } from '@/src/components/spotify-playlist-embed';
 import {
   homepageSettingsQuery,
   latestBeatQuery,
@@ -7,7 +8,7 @@ import {
   latestThoughtQuery
 } from '@/src/sanity/lib/queries';
 
-type LatestItem = { _id: string; title?: string; body?: string; note?: string; shortNote?: string; url?: string };
+type LatestItem = { _id: string; title?: string; body?: string; note?: string; shortNote?: string; url?: string; spotifyUrl?: string; spotifyEmbedUrl?: string };
 
 export default async function HomePage() {
   const [settings, beat, link, playlist, thought] = await Promise.all([
@@ -72,7 +73,7 @@ export default async function HomePage() {
         <p className="text-[11px] uppercase tracking-[0.32em] text-cobalt">Latest logs</p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <LatestCard label="Latest link" item={link} empty="No links saved yet" />
-          <LatestCard label="Latest playlist" item={playlist} empty="No playlists saved yet" />
+          <PlaylistCard item={playlist} />
           <LatestCard label="Latest thought" item={thought} empty="No thoughts published yet" />
         </div>
       </section>
@@ -80,13 +81,29 @@ export default async function HomePage() {
   );
 }
 
+function PlaylistCard({ item }: { item: LatestItem | null }) {
+  return (
+    <article className="rounded-[1.5rem] border border-white/10 bg-[#0a0d14]/80 p-5">
+      <p className="text-[10px] uppercase tracking-[0.28em] text-mist/50">Latest playlist</p>
+      <h3 className="mt-3 font-semibold text-white">{item?.title || 'No playlists saved yet'}</h3>
+      {item ? (
+        <SpotifyPlaylistEmbed title={item.title || 'Spotify playlist'} spotifyUrl={item.spotifyUrl} spotifyEmbedUrl={item.spotifyEmbedUrl} />
+      ) : (
+        <p className="mt-2 text-sm leading-6 text-mist/70">Content will appear here automatically.</p>
+      )}
+    </article>
+  );
+}
+
 function LatestCard({ label, item, empty }: { label: string; item: LatestItem | null; empty: string }) {
+  const untitledLabel = item?.url ? 'Saved link' : 'Untitled thought';
+
   return (
     <article className="rounded-[1.5rem] border border-white/10 bg-[#0a0d14]/80 p-5">
       <p className="text-[10px] uppercase tracking-[0.28em] text-mist/50">{label}</p>
-      <h3 className="mt-3 font-semibold text-white">{item?.title || empty}</h3>
+      <h3 className="mt-3 font-semibold text-white">{item ? item.title || untitledLabel : empty}</h3>
       <p className="mt-2 line-clamp-3 text-sm leading-6 text-mist/70">
-        {item?.body || item?.note || item?.shortNote || 'Content will appear here automatically.'}
+        {item?.body || item?.note || item?.shortNote || item?.url || 'Content will appear here automatically.'}
       </p>
     </article>
   );
