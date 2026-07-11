@@ -1,179 +1,64 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef, type ReactNode } from 'react';
-import type { PlayerBeat } from '@/src/types/player';
+import type { PlaybackContext, PlayerBeat } from '@/src/types/player';
 
-type PlayerState = {
-  beat: PlayerBeat | null;
-  isLoading: boolean;
-  isPlaying: boolean;
-  currentTime: number;
-  duration: number;
-  hasEnded: boolean;
-  error: string | null;
-};
-
-type PlayerContextValue = PlayerState & {
-  selectBeat: (beat: PlayerBeat) => Promise<void>;
-  play: () => Promise<void>;
-  pause: () => void;
-  togglePlayback: () => Promise<void>;
-  seek: (time: number) => void;
-};
-
-type Action =
-  | { type: 'select'; beat: PlayerBeat }
-  | { type: 'ready' }
-  | { type: 'playing' }
-  | { type: 'paused' }
-  | { type: 'time'; currentTime: number; duration: number }
-  | { type: 'ended' }
-  | { type: 'error'; message: string };
-
-const initialState: PlayerState = {
-  beat: null,
-  isLoading: false,
-  isPlaying: false,
-  currentTime: 0,
-  duration: 0,
-  hasEnded: false,
-  error: null
-};
-
+type PlayerState = { queue: PlayerBeat[]; currentIndex: number; context: PlaybackContext | null; shuffle: boolean; isLoading: boolean; isPlaying: boolean; currentTime: number; duration: number; hasEnded: boolean; error: string | null };
+type PlayerContextValue = PlayerState & { beat: PlayerBeat | null; hasPrevious: boolean; hasNext: boolean; selectBeat: (beat: PlayerBeat, queue?: PlayerBeat[], context?: PlaybackContext) => Promise<void>; playQueue: (queue: PlayerBeat[], context: PlaybackContext, startIndex?: number, shuffle?: boolean) => Promise<void>; play: () => Promise<void>; pause: () => void; togglePlayback: () => Promise<void>; seek: (time: number) => void; next: () => Promise<void>; previous: () => Promise<void>; selectQueueIndex: (index: number) => Promise<void> };
+type Action = { type: 'select'; queue: PlayerBeat[]; index: number; context: PlaybackContext; shuffle: boolean } | { type: 'ready' } | { type: 'playing' } | { type: 'paused' } | { type: 'time'; currentTime: number; duration: number } | { type: 'ended' } | { type: 'error'; message: string };
+const initialState: PlayerState = { queue: [], currentIndex: -1, context: null, shuffle: false, isLoading: false, isPlaying: false, currentTime: 0, duration: 0, hasEnded: false, error: null };
 const PlayerContext = createContext<PlayerContextValue | null>(null);
 
 function reducer(state: PlayerState, action: Action): PlayerState {
   switch (action.type) {
-    case 'select':
-      return { ...initialState, beat: action.beat, isLoading: true };
-    case 'ready':
-      return { ...state, isLoading: false, error: null };
-    case 'playing':
-      return { ...state, isLoading: false, isPlaying: true, hasEnded: false, error: null };
-    case 'paused':
-      return { ...state, isPlaying: false };
-    case 'time':
-      return { ...state, currentTime: action.currentTime, duration: action.duration };
-    case 'ended':
-      return { ...state, isPlaying: false, hasEnded: true, currentTime: state.duration };
-    case 'error':
-      return { ...state, isLoading: false, isPlaying: false, error: action.message };
+    case 'select': return { ...initialState, queue: action.queue, currentIndex: action.index, context: action.context, shuffle: action.shuffle, isLoading: true };
+    case 'ready': return { ...state, isLoading: false, error: null };
+    case 'playing': return { ...state, isLoading: false, isPlaying: true, hasEnded: false, error: null };
+    case 'paused': return { ...state, isPlaying: false };
+    case 'time': return { ...state, currentTime: action.currentTime, duration: action.duration };
+    case 'ended': return { ...state, isPlaying: false, hasEnded: true, currentTime: state.duration };
+    case 'error': return { ...state, isLoading: false, isPlaying: false, error: action.message };
   }
 }
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const stateRef = useRef(state); stateRef.current = state;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const requestRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    const audio = new Audio();
-    audio.preload = 'metadata';
-    audioRef.current = audio;
-
-    const updateTime = () => dispatch({
-      type: 'time',
-      currentTime: audio.currentTime || 0,
-      duration: Number.isFinite(audio.duration) ? audio.duration : 0
-    });
-    const handleReady = () => {
-      dispatch({ type: 'ready' });
-      updateTime();
-    };
-    const handlePlaying = () => dispatch({ type: 'playing' });
-    const handlePause = () => dispatch({ type: 'paused' });
-    const handleEnded = () => dispatch({ type: 'ended' });
-    const handleError = () => dispatch({ type: 'error', message: 'The audio file could not be loaded. The signed URL may have expired.' });
-
-    audio.addEventListener('loadedmetadata', handleReady);
-    audio.addEventListener('durationchange', updateTime);
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('playing', handlePlaying);
-    audio.addEventListener('pause', handlePause);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError);
-
-    return () => {
-      requestRef.current?.abort();
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-      audio.removeEventListener('loadedmetadata', handleReady);
-      audio.removeEventListener('durationchange', updateTime);
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.removeEventListener('playing', handlePlaying);
-      audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
-      audioRef.current = null;
-    };
-  }, []);
-
-  const play = useCallback(async () => {
-    const audio = audioRef.current;
-    if (!audio?.src) return;
-    try {
-      await audio.play();
-    } catch {
-      dispatch({ type: 'error', message: 'Playback could not start. Try pressing play again.' });
-    }
-  }, []);
-
+  const play = useCallback(async () => { const audio = audioRef.current; if (!audio?.src) return; try { await audio.play(); } catch { dispatch({ type: 'error', message: 'Playback could not start. Try pressing play again.' }); } }, []);
   const pause = useCallback(() => audioRef.current?.pause(), []);
-
-  const selectBeat = useCallback(async (beat: PlayerBeat) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-    audio.pause();
-    audio.removeAttribute('src');
-    audio.load();
-    dispatch({ type: 'select', beat });
-
+  const loadIndex = useCallback(async (queue: PlayerBeat[], index: number, context: PlaybackContext, shuffle = false) => {
+    const audio = audioRef.current; const beat = queue[index]; if (!audio || !beat) return;
+    requestRef.current?.abort(); const controller = new AbortController(); requestRef.current = controller;
+    audio.pause(); audio.removeAttribute('src'); audio.load(); dispatch({ type: 'select', queue, index, context, shuffle });
     try {
-      const response = await fetch('/api/playback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ beatId: beat._id }),
-        cache: 'no-store',
-        signal: controller.signal
-      });
+      const response = await fetch('/api/playback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ beatId: beat._id }), cache: 'no-store', signal: controller.signal });
       const payload: { url?: string; error?: string } = await response.json();
       if (!response.ok || !payload.url) throw new Error(payload.error || 'Unable to sign this Beat.');
-      if (controller.signal.aborted) return;
-
-      audio.src = payload.url;
-      audio.load();
-      await play();
-    } catch (error) {
-      if (controller.signal.aborted) return;
-      dispatch({ type: 'error', message: error instanceof Error ? error.message : 'Playback is temporarily unavailable.' });
-    }
-  }, [play]);
-
-  const togglePlayback = useCallback(async () => {
-    if (audioRef.current?.paused) await play();
-    else pause();
-  }, [pause, play]);
-
-  const seek = useCallback((time: number) => {
-    const audio = audioRef.current;
-    if (!audio || !Number.isFinite(time)) return;
-    audio.currentTime = Math.min(Math.max(time, 0), Number.isFinite(audio.duration) ? audio.duration : time);
+      if (controller.signal.aborted) return; audio.src = payload.url; audio.load(); await audio.play();
+    } catch (error) { if (!controller.signal.aborted) dispatch({ type: 'error', message: error instanceof Error ? error.message : 'Playback is temporarily unavailable.' }); }
   }, []);
+  const next = useCallback(async () => { const s = stateRef.current; if (s.currentIndex < s.queue.length - 1 && s.context) await loadIndex(s.queue, s.currentIndex + 1, s.context, s.shuffle); }, [loadIndex]);
+  const previous = useCallback(async () => { const audio = audioRef.current; if (audio && audio.currentTime > 3) { audio.currentTime = 0; await play(); return; } const s = stateRef.current; if (s.currentIndex > 0 && s.context) await loadIndex(s.queue, s.currentIndex - 1, s.context, s.shuffle); }, [loadIndex, play]);
 
-  return (
-    <PlayerContext.Provider value={{ ...state, selectBeat, play, pause, togglePlayback, seek }}>
-      {children}
-    </PlayerContext.Provider>
-  );
-}
+  useEffect(() => {
+    const audio = new Audio(); audio.preload = 'metadata'; audioRef.current = audio;
+    const update = () => dispatch({ type: 'time', currentTime: audio.currentTime || 0, duration: Number.isFinite(audio.duration) ? audio.duration : 0 });
+    const ended = () => { dispatch({ type: 'ended' }); const s = stateRef.current; if (s.currentIndex < s.queue.length - 1 && s.context) void loadIndex(s.queue, s.currentIndex + 1, s.context, s.shuffle); };
+    const ready = () => { dispatch({ type: 'ready' }); update(); };
+    const playing = () => dispatch({ type: 'playing' }); const paused = () => dispatch({ type: 'paused' }); const error = () => dispatch({ type: 'error', message: 'The audio file could not be loaded. The signed URL may have expired.' });
+    audio.addEventListener('loadedmetadata', ready); audio.addEventListener('durationchange', update); audio.addEventListener('timeupdate', update); audio.addEventListener('playing', playing); audio.addEventListener('pause', paused); audio.addEventListener('ended', ended); audio.addEventListener('error', error);
+    return () => { requestRef.current?.abort(); audio.pause(); audio.removeAttribute('src'); audio.load(); audio.removeEventListener('loadedmetadata', ready); audio.removeEventListener('durationchange', update); audio.removeEventListener('timeupdate', update); audio.removeEventListener('playing', playing); audio.removeEventListener('pause', paused); audio.removeEventListener('ended', ended); audio.removeEventListener('error', error); audioRef.current = null; };
+  }, [loadIndex]);
 
-export function usePlayer() {
-  const context = useContext(PlayerContext);
-  if (!context) throw new Error('usePlayer must be used inside PlayerProvider.');
-  return context;
+  const playQueue = useCallback(async (queue: PlayerBeat[], context: PlaybackContext, startIndex = 0, shuffle = false) => { if (queue.length) await loadIndex(queue, startIndex, context, shuffle); }, [loadIndex]);
+  const selectBeat = useCallback(async (beat: PlayerBeat, queue = [beat], context: PlaybackContext = { type: 'manual', title: beat.title }) => { const index = Math.max(0, queue.findIndex((item) => item._id === beat._id)); await loadIndex(queue, index, context, false); }, [loadIndex]);
+  const togglePlayback = useCallback(async () => { if (audioRef.current?.paused) await play(); else pause(); }, [pause, play]);
+  const seek = useCallback((time: number) => { const audio = audioRef.current; if (audio && Number.isFinite(time)) audio.currentTime = Math.min(Math.max(time, 0), Number.isFinite(audio.duration) ? audio.duration : time); }, []);
+  const selectQueueIndex = useCallback(async (index: number) => { const s = stateRef.current; if (s.context) await loadIndex(s.queue, index, s.context, s.shuffle); }, [loadIndex]);
+  const beat = state.queue[state.currentIndex] || null;
+  return <PlayerContext.Provider value={{ ...state, beat, hasPrevious: state.currentIndex > 0, hasNext: state.currentIndex >= 0 && state.currentIndex < state.queue.length - 1, selectBeat, playQueue, play, pause, togglePlayback, seek, next, previous, selectQueueIndex }}>{children}</PlayerContext.Provider>;
 }
+export function usePlayer() { const context = useContext(PlayerContext); if (!context) throw new Error('usePlayer must be used inside PlayerProvider.'); return context; }

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     const beat = await sanityClient.fetch<{ audioObjectKey?: string } | null>(
-      `*[_type == "beat" && _id == $beatId && defined(audioObjectKey)][0]{audioObjectKey}`,
+      `*[_type == "beat" && _id == $beatId && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]][0]{audioObjectKey}`,
       { beatId },
       { cache: 'no-store', perspective: 'published' }
     );

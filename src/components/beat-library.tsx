@@ -4,7 +4,7 @@ import { LoaderCircle, Pause, Play } from 'lucide-react';
 import { usePlayer } from './player-provider';
 import type { PlayerBeat } from '@/src/types/player';
 
-export function BeatLibrary({ beats }: { beats: PlayerBeat[] }) {
+export function BeatLibrary({ beats, contextType, contextTitle }: { beats: PlayerBeat[]; contextType: 'main-library' | 'all-beats'; contextTitle: string }) {
   const player = usePlayer();
 
   if (!beats.length) {
@@ -28,7 +28,7 @@ export function BeatLibrary({ beats }: { beats: PlayerBeat[] }) {
             </div>
             <button
               type="button"
-              onClick={() => selected ? void player.togglePlayback() : void player.selectBeat(beat)}
+              onClick={() => selected ? void player.togglePlayback() : void player.selectBeat(beat, beats, { type: contextType, title: contextTitle })}
               disabled={selected && player.isLoading}
               aria-label={`${selected && player.isPlaying ? 'Pause' : 'Play'} ${beat.title}`}
               className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"

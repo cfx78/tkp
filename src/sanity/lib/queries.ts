@@ -24,7 +24,7 @@ export const latestBeatQuery = groq`*[_type == "beat" && nsfw != true] | order(c
   lane->{_id, name, "slug": slug.current, primaryColor, fallbackCoverArt${imageProjection}}
 }`;
 
-export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey)] | order(coalesce(publishedAt, _createdAt) desc){
+const playerBeatProjection = groq`{
   _id,
   title,
   "slug": slug.current,
@@ -41,6 +41,10 @@ export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObject
     "slug": slug.current
   }
 }`;
+
+export const mainLibraryBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo"]] | order(coalesce(publishedAt, _createdAt) desc)${playerBeatProjection}`;
+
+export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]] | order(coalesce(publishedAt, _createdAt) desc)${playerBeatProjection}`;
 
 export const latestLinkQuery = groq`*[_type == "link" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
   _id, title, url, platformAuto, platformOverride, note, publishedAt
@@ -65,8 +69,8 @@ export const lanesQuery = groq`*[_type == "lane"] | order(sortOrder asc, name as
 
 export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
   _id, title, "slug": slug.current, releaseType, shortDescription, publishedAt,
-  coverArt${imageProjection}, lane->{_id, name, "slug": slug.current},
-  "trackCount": count(beats)
+  "coverArtUrl": coverArt.asset->url, lane->{_id, name, "slug": slug.current},
+  "beats": beats[]->[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]]${playerBeatProjection}
 }`;
 
 export const logsQuery = groq`*[_type == "log" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
