@@ -1,5 +1,11 @@
 export type PlayerBeat = {
   _id: string;
+  sourceType?: 'main' | 'version';
+  parentBeatId?: string;
+  versionKey?: string;
+  versionType?: string;
+  parentBeatTitle?: string;
+  parentBeatSlug?: string;
   title: string;
   slug?: string;
   status?: string;
@@ -16,7 +22,7 @@ export type PlayerBeat = {
   }>;
 };
 
-export type PlaybackContextType = 'main-library' | 'all-beats' | 'release' | 'manual';
+export type PlaybackContextType = 'main-library' | 'all-beats' | 'release' | 'manual' | 'context';
 export type RepeatMode = 'off' | 'all' | 'one';
 
 export type PlaybackContext = {

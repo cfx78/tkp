@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ExternalLink, FileAudio, ListMusic } from 'lucide-react';
 import { BeatFilePlayer } from '@/src/components/beat-file-player';
+import { ContextPlayer } from '@/src/components/context-player';
 import { fetchSanity } from '@/src/sanity/lib/content';
 import { beatFileQuery } from '@/src/sanity/lib/queries';
 import type { BeatFile } from '@/src/types/beat-file';
@@ -27,7 +28,7 @@ export default async function BeatFilePage({ params }: Props) {
       {beat.tags.length ? <div className="mt-5 flex flex-wrap gap-2">{beat.tags.map((tag) => <Chip key={tag.slug || tag.name}>{tag.name}</Chip>)}</div> : null}
     </section>
     {beat.releases.length ? <Section title="Releases"><div className="grid gap-3 sm:grid-cols-2">{beat.releases.map((release) => <InfoCard key={release._id} label={release.releaseType || 'Release'} title={release.title} />)}</div></Section> : null}
-    {beat.versions.length ? <Section title="Context" note="Playback coming later"><div className="grid gap-3">{beat.versions.map((version, index) => <article key={`${version.title}-${index}`} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><div className="flex flex-wrap items-center gap-2"><p className="font-semibold text-white">{version.title}</p>{version.versionType ? <Chip>{version.versionType}</Chip> : null}{version.nsfw ? <span className="text-[10px] uppercase tracking-wider text-ember">NSFW</span> : null}</div>{version.createdAt ? <p className="mt-2 text-xs text-mist/45">{formatDate(version.createdAt)}</p> : null}{version.note && !version.nsfw ? <p className="mt-3 text-sm leading-6 text-mist/65">{version.note}</p> : version.nsfw ? <p className="mt-3 text-sm text-ember">Sensitive context note hidden.</p> : null}</article>)}</div></Section> : null}
+    {beat.versions.length ? <Section title="Context"><ContextPlayer parent={{ _id: beat._id, title: beat.title, slug: beat.slug, coverArtUrl: beat.coverArtUrl, lane: beat.lane }} versions={beat.versions} /></Section> : null}
     <Related beat={beat} />
   </main>;
 }

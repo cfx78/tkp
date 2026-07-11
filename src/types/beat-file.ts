@@ -10,5 +10,5 @@ export type BeatFile = Omit<PlayerBeat, 'lane' | 'releases'> & {
   relatedLinks: Array<{ _id: string; title?: string; url: string; platformAuto?: string; platformOverride?: string; note?: string }>;
   relatedPlaylists: Array<{ _id: string; title: string; slug?: string; spotifyUrl?: string; appleMusicUrl?: string; youtubeMusicUrl?: string; shortNote?: string }>;
   relatedQuotes: Array<{ _id: string; quoteText: string; person: string; sourceTitle?: string; sourceUrl?: string }>;
-  versions: Array<{ title: string; note?: string; versionType?: string; createdAt?: string; nsfw?: boolean; nsfwReason?: string }>;
+  versions: Array<{ _key: string; title: string; note?: string; versionType?: string; createdAt?: string; nsfw?: boolean; nsfwReason?: string; audioAvailable: boolean }>;
 };

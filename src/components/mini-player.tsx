@@ -18,7 +18,7 @@ export function MiniPlayer() {
         </Link> : <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">{cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}</div>}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-white">{beat.slug ? <Link href={`/player/beats/${beat.slug}`}>{beat.title}</Link> : beat.title}</p>
-          <p className="truncate text-xs text-mist/55">{isQueueComplete ? 'Queue complete' : beat.lane?.name || 'Unassigned lane'}</p>
+          <p className="truncate text-xs text-mist/55">{isQueueComplete ? 'Queue complete' : beat.sourceType === 'version' ? `CONTEXT · ${beat.lane?.name || 'Unassigned lane'}` : beat.lane?.name || 'Unassigned lane'}</p>
         </div>
         <button type="button" onClick={() => void previous()} disabled={!hasPrevious && currentTime <= 3} aria-label="Previous Beat" className="grid h-9 w-9 place-items-center text-white disabled:text-mist/25"><SkipBack className="h-4 w-4" fill="currentColor" /></button>
         <button type="button" onClick={() => void togglePlayback()} disabled={isLoading} aria-label={isPlaying ? 'Pause' : 'Play'} className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink disabled:opacity-50">

@@ -78,7 +78,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     requestRef.current?.abort(); const controller = new AbortController(); requestRef.current = controller;
     audio.pause(); audio.removeAttribute('src'); audio.load(); dispatch({ type: 'select', queue, index, context, shuffle });
     try {
-      const response = await fetch('/api/playback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ beatId: beat._id }), cache: 'no-store', signal: controller.signal });
+      const requestBody = beat.sourceType === 'version'
+        ? { sourceType: 'version', beatId: beat.parentBeatId, versionKey: beat.versionKey }
+        : { sourceType: 'main', beatId: beat._id };
+      const response = await fetch('/api/playback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody), cache: 'no-store', signal: controller.signal });
       const payload: { url?: string; error?: string } = await response.json();
       if (!response.ok || !payload.url) throw new Error(payload.error || 'Unable to sign this Beat.');
       if (controller.signal.aborted) return; audio.src = payload.url; audio.load(); await audio.play();
@@ -123,7 +126,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: beat.title,
       artist: beat.lane?.name || 'The Kitsune Protocol',
-      album: state.context?.title || 'Player',
+      album: beat.sourceType === 'version' ? beat.parentBeatTitle || state.context?.title || 'Context' : state.context?.title || 'Player',
       artwork
     });
     return () => { navigator.mediaSession.metadata = null; };

@@ -34,9 +34,8 @@ export default defineType({
       defineField({
         name: 'audioObjectKey',
         title: 'R2 Audio Object Key',
-        description: 'R2 object key only, for example beats/test-beat-version.mp3. Do not paste a public URL.',
-        type: 'string',
-        validation: (Rule) => Rule.required()
+        description: 'Optional. Add an R2 object key, for example beats/test-beat-version.mp3, only when this Context entry should be playable. Do not paste a public URL.',
+        type: 'string'
       }),
       defineField({ name: 'note', title: 'Note', type: 'text' }),
       defineField({ name: 'versionType', title: 'Version Type', type: 'string' }),

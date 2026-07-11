@@ -59,7 +59,7 @@ export const beatFileQuery = groq`*[_type == "beat" && slug.current == $slug && 
   "relatedLinks": coalesce(relatedLinks[]->{_id, title, url, platformAuto, platformOverride, note}, []),
   "relatedPlaylists": coalesce(relatedPlaylists[]->{_id, title, "slug": slug.current, spotifyUrl, appleMusicUrl, youtubeMusicUrl, shortNote}, []),
   "relatedQuotes": coalesce(relatedQuotes[]->{_id, quoteText, person, sourceTitle, sourceUrl}, []),
-  "versions": coalesce(versions[]{title, note, versionType, createdAt, nsfw, nsfwReason}, [])
+  "versions": coalesce(versions[]{_key, title, note, versionType, createdAt, nsfw, nsfwReason, "audioAvailable": defined(audioObjectKey)}, [])
 }`;
 
 export const latestLinkQuery = groq`*[_type == "link" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
