@@ -19,9 +19,27 @@ export const homepageSettingsQuery = groq`*[_type == "homepageSettings"][0]{
 }`;
 
 export const latestBeatQuery = groq`*[_type == "beat" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
-  _id, title, "slug": slug.current, audioObjectKey, status, shortNote, publishedAt,
+  _id, title, "slug": slug.current, status, shortNote, publishedAt,
   coverArt${imageProjection},
   lane->{_id, name, "slug": slug.current, primaryColor, fallbackCoverArt${imageProjection}}
+}`;
+
+export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey)] | order(coalesce(publishedAt, _createdAt) desc){
+  _id,
+  title,
+  "slug": slug.current,
+  status,
+  "coverArtUrl": coverArt.asset->url,
+  lane->{
+    name,
+    "slug": slug.current,
+    "fallbackCoverArtUrl": fallbackCoverArt.asset->url
+  },
+  "releases": *[_type == "release" && references(^._id)]{
+    _id,
+    title,
+    "slug": slug.current
+  }
 }`;
 
 export const latestLinkQuery = groq`*[_type == "link" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{

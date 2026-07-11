@@ -1,22 +1,30 @@
+import { BeatLibrary } from '@/src/components/beat-library';
 import { fetchSanity } from '@/src/sanity/lib/content';
-import { lanesQuery, latestBeatQuery, releasesQuery } from '@/src/sanity/lib/queries';
+import { lanesQuery, publishedBeatsQuery, releasesQuery } from '@/src/sanity/lib/queries';
+import type { PlayerBeat } from '@/src/types/player';
 
 type NamedItem = { _id: string; title?: string; name?: string; shortDescription?: string; plainDescription?: string; trackCount?: number };
 
 export default async function PlayerPage() {
-  const [latestBeat, lanes, releases] = await Promise.all([
-    fetchSanity<NamedItem | null>(latestBeatQuery, null),
+  const [beats, lanes, releases] = await Promise.all([
+    fetchSanity<PlayerBeat[]>(publishedBeatsQuery, []),
     fetchSanity<NamedItem[]>(lanesQuery, []),
     fetchSanity<NamedItem[]>(releasesQuery, [])
   ]);
 
   return (
-    <main className="flex flex-col gap-6">
+    <main className="flex flex-col gap-7">
       <section className="rounded-[1.75rem] border border-white/10 bg-white/5 p-6 shadow-soft">
         <p className="text-[11px] uppercase tracking-[0.32em] text-cobalt">Player library</p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">{latestBeat?.title || 'No beats published yet'}</h1>
-        <p className="mt-3 text-sm leading-7 text-mist/70">Library content is connected. Playback controls arrive in Phase 3.</p>
+        <h1 className="mt-3 text-3xl font-semibold text-white">Beats</h1>
+        <p className="mt-3 text-sm leading-7 text-mist/70">Private R2 listening copies, delivered with temporary signed playback access.</p>
       </section>
+
+      <section>
+        <h2 className="text-xl font-semibold text-white">All Beats</h2>
+        <div className="mt-3"><BeatLibrary beats={beats} /></div>
+      </section>
+
       <ContentGrid title="Lanes" items={lanes} empty="No lanes have been published." />
       <ContentGrid title="Releases" items={releases} empty="No releases have been published." />
     </main>

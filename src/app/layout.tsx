@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AppShell } from '@/src/components/app-shell';
+import { PlayerProvider } from '@/src/components/player-provider';
 
 export const metadata: Metadata = {
   title: 'The Kitsune Protocol',
@@ -11,7 +12,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <AppShell>{children}</AppShell>
+        <PlayerProvider>
+          <AppShell>{children}</AppShell>
+        </PlayerProvider>
       </body>
     </html>
   );

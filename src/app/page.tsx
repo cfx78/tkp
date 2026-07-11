@@ -8,7 +8,7 @@ import {
   latestThoughtQuery
 } from '@/src/sanity/lib/queries';
 
-type LatestItem = { _id: string; title?: string; body?: string; note?: string; shortNote?: string; url?: string; audioObjectKey?: string; spotifyUrl?: string; spotifyEmbedUrl?: string };
+type LatestItem = { _id: string; title?: string; body?: string; note?: string; shortNote?: string; url?: string; spotifyUrl?: string; spotifyEmbedUrl?: string };
 
 export default async function HomePage() {
   const [settings, beat, link, playlist, thought] = await Promise.all([
