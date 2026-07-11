@@ -1,0 +1,39 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { ArrowLeft, ExternalLink, FileAudio, ListMusic } from 'lucide-react';
+import { BeatFilePlayer } from '@/src/components/beat-file-player';
+import { fetchSanity } from '@/src/sanity/lib/content';
+import { beatFileQuery } from '@/src/sanity/lib/queries';
+import type { BeatFile } from '@/src/types/beat-file';
+
+type Props = { params: { slug: string } };
+const statusLabels: Record<string, string> = { main: 'Main', approvedDemo: 'Approved Demo', sketch: 'Sketch', roughMix: 'Rough Mix', alternateMix: 'Alternate Mix' };
+async function getBeat(slug: string) { return fetchSanity<BeatFile | null>(beatFileQuery, null, { slug }); }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const beat = await getBeat(params.slug); if (!beat) return { title: 'Beat Not Found | The Kitsune Protocol' };
+  const artwork = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
+  const description = beat.shortNote || (beat.lane?.name ? `${beat.title}, a ${beat.lane.name} Beat from The Kitsune Protocol.` : `${beat.title} from The Kitsune Protocol.`);
+  return { title: `${beat.title} | The Kitsune Protocol`, description, openGraph: { title: beat.title, description, images: artwork ? [{ url: artwork }] : undefined } };
+}
+
+export default async function BeatFilePage({ params }: Props) {
+  const beat = await getBeat(params.slug); if (!beat) notFound();
+  const artwork = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
+  return <main className="mx-auto w-full max-w-3xl"><Link href="/player" className="inline-flex min-h-11 items-center gap-2 text-sm text-mist/65 hover:text-white"><ArrowLeft className="h-4 w-4" /> Back to Player</Link>
+    <section className="mt-4 overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-soft sm:p-7"><p className="text-[10px] uppercase tracking-[0.34em] text-cobalt">BEAT_FILE</p><div className="mt-5 grid gap-7 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-end"><div className="aspect-square overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-br from-cobalt/25 via-white/5 to-ember/20">{artwork ? <img src={artwork} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><ListMusic className="h-14 w-14 text-white/15" /></div>}</div><div className="min-w-0"><div className="flex flex-wrap gap-2"><Chip>{statusLabels[beat.status || ''] || 'Beat'}</Chip>{beat.publishedAt ? <Chip>{formatDate(beat.publishedAt)}</Chip> : null}</div><h1 className="mt-4 break-words text-3xl font-semibold text-white sm:text-4xl">{beat.title}</h1><p className="mt-2 text-sm text-mist/60">{beat.lane?.name || 'Unassigned lane'}</p>{beat.nsfw ? <p className="mt-4 rounded-xl border border-ember/30 bg-ember/10 p-3 text-sm text-ember">Content warning{beat.nsfwReason ? `: ${beat.nsfwReason}` : ''}</p> : null}<div className="mt-6"><BeatFilePlayer beat={beat} /></div></div></div>
+      {beat.shortNote ? <p className="mt-7 border-t border-white/10 pt-6 text-sm leading-7 text-mist/75">{beat.shortNote}</p> : null}
+      {beat.tags.length ? <div className="mt-5 flex flex-wrap gap-2">{beat.tags.map((tag) => <Chip key={tag.slug || tag.name}>{tag.name}</Chip>)}</div> : null}
+    </section>
+    {beat.releases.length ? <Section title="Releases"><div className="grid gap-3 sm:grid-cols-2">{beat.releases.map((release) => <InfoCard key={release._id} label={release.releaseType || 'Release'} title={release.title} />)}</div></Section> : null}
+    {beat.versions.length ? <Section title="Context" note="Playback coming later"><div className="grid gap-3">{beat.versions.map((version, index) => <article key={`${version.title}-${index}`} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"><div className="flex flex-wrap items-center gap-2"><p className="font-semibold text-white">{version.title}</p>{version.versionType ? <Chip>{version.versionType}</Chip> : null}{version.nsfw ? <span className="text-[10px] uppercase tracking-wider text-ember">NSFW</span> : null}</div>{version.createdAt ? <p className="mt-2 text-xs text-mist/45">{formatDate(version.createdAt)}</p> : null}{version.note && !version.nsfw ? <p className="mt-3 text-sm leading-6 text-mist/65">{version.note}</p> : version.nsfw ? <p className="mt-3 text-sm text-ember">Sensitive context note hidden.</p> : null}</article>)}</div></Section> : null}
+    <Related beat={beat} />
+  </main>;
+}
+
+function Related({ beat }: { beat: BeatFile }) { return <>{beat.relatedFixations.length ? <Section title="Fixations"><div className="grid gap-3 sm:grid-cols-2">{beat.relatedFixations.map((item) => <InfoCard key={item._id} label="Fixation" title={item.title} body={item.shortDescription} />)}</div></Section> : null}{beat.relatedLogs.length ? <Section title="Logs"><div className="grid gap-3">{beat.relatedLogs.map((item) => <InfoCard key={item._id} label={item.logType || 'Log'} title={item.title || item.body?.slice(0, 80) || 'Untitled thought'} body={item.title ? item.body : undefined} />)}</div></Section> : null}{beat.relatedLinks.length ? <Section title="Links"><div className="grid gap-3 sm:grid-cols-2">{beat.relatedLinks.map((item) => <a key={item._id} href={item.url} target="_blank" rel="noreferrer noopener" className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 transition hover:bg-white/[0.07]"><p className="text-[10px] uppercase tracking-wider text-cobalt">{item.platformOverride || item.platformAuto || 'Saved link'}</p><p className="mt-2 flex items-start justify-between gap-3 font-semibold text-white"><span>{item.title || 'Saved link'}</span><ExternalLink className="h-4 w-4 shrink-0" /></p></a>)}</div></Section> : null}{beat.relatedPlaylists.length ? <Section title="Playlists"><div className="grid gap-3 sm:grid-cols-2">{beat.relatedPlaylists.map((item) => <InfoCard key={item._id} label="Playlist" title={item.title} body={item.shortNote} externalUrl={item.spotifyUrl} />)}</div></Section> : null}{beat.relatedQuotes.length ? <Section title="Quotes"><div className="grid gap-3">{beat.relatedQuotes.map((item) => <blockquote key={item._id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-5"><p className="text-base leading-7 text-white">“{item.quoteText}”</p><footer className="mt-3 text-sm text-mist/55">— {item.person}</footer></blockquote>)}</div></Section> : null}</>; }
+function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) { return <section className="mt-8"><div className="mb-3 flex items-end justify-between gap-4"><h2 className="text-xl font-semibold text-white">{title}</h2>{note ? <p className="text-[10px] uppercase tracking-wider text-mist/40">{note}</p> : null}</div>{children}</section>; }
+function InfoCard({ label, title, body, externalUrl }: { label: string; title: string; body?: string; externalUrl?: string }) { const content = <><p className="text-[10px] uppercase tracking-wider text-cobalt">{label}</p><p className="mt-2 font-semibold text-white">{title}</p>{body ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-mist/60">{body}</p> : null}</>; return externalUrl ? <a href={externalUrl} target="_blank" rel="noreferrer noopener" className="block rounded-2xl border border-white/10 bg-white/[0.035] p-4">{content}</a> : <article className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">{content}</article>; }
+function Chip({ children }: { children: React.ReactNode }) { return <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-wider text-mist/60">{children}</span>; }
+function formatDate(value: string) { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(date); }

@@ -1,5 +1,6 @@
 import { fetchSanity, type FixationSummary, type HomepageSettings } from '@/src/sanity/lib/content';
 import { SpotifyPlaylistEmbed } from '@/src/components/spotify-playlist-embed';
+import Link from 'next/link';
 import {
   homepageSettingsQuery,
   latestBeatQuery,
@@ -8,7 +9,7 @@ import {
   latestThoughtQuery
 } from '@/src/sanity/lib/queries';
 
-type LatestItem = { _id: string; title?: string; body?: string; note?: string; shortNote?: string; url?: string; spotifyUrl?: string; spotifyEmbedUrl?: string };
+type LatestItem = { _id: string; title?: string; slug?: string; body?: string; note?: string; shortNote?: string; url?: string; spotifyUrl?: string; spotifyEmbedUrl?: string };
 
 export default async function HomePage() {
   const [settings, beat, link, playlist, thought] = await Promise.all([
@@ -46,7 +47,7 @@ export default async function HomePage() {
 
       <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-soft backdrop-blur">
         <p className="text-[11px] uppercase tracking-[0.35em] text-cobalt">Latest beat</p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">{beat?.title || 'No beats published yet'}</h1>
+        <h1 className="mt-3 text-3xl font-semibold text-white">{beat?.slug ? <Link href={`/player/beats/${beat.slug}`} className="hover:text-cobalt">{beat.title}</Link> : beat?.title || 'No beats published yet'}</h1>
         <p className="mt-3 text-sm text-mist/70">{beat?.shortNote || 'The latest beat will appear here when the archive is ready.'}</p>
       </section>
 

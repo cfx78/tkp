@@ -1,8 +1,8 @@
 import { sanityClient } from './client';
 
-export async function fetchSanity<T>(query: string, fallback: T): Promise<T> {
+export async function fetchSanity<T>(query: string, fallback: T, params: Record<string, unknown> = {}): Promise<T> {
   try {
-    return await sanityClient.fetch<T>(query, {}, { cache: 'no-store' });
+    return await sanityClient.fetch<T>(query, params, { cache: 'no-store' });
   } catch (error) {
     if (isNextDynamicSignal(error)) throw error;
     console.error('Sanity content request failed; rendering the configured fallback.', error);

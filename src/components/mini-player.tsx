@@ -13,11 +13,11 @@ export function MiniPlayer() {
   return (
     <aside className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-xl rounded-2xl border border-white/10 bg-[#0a0d14]/95 p-3 shadow-[0_-14px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl">
       <div className="flex items-center gap-3">
-        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">
+        {beat.slug ? <Link href={`/player/beats/${beat.slug}`} aria-label={`Open Beat File for ${beat.title}`} className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">
           {cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}
-        </div>
+        </Link> : <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">{cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}</div>}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-white">{beat.title}</p>
+          <p className="truncate text-sm font-semibold text-white">{beat.slug ? <Link href={`/player/beats/${beat.slug}`}>{beat.title}</Link> : beat.title}</p>
           <p className="truncate text-xs text-mist/55">{isQueueComplete ? 'Queue complete' : beat.lane?.name || 'Unassigned lane'}</p>
         </div>
         <button type="button" onClick={() => void previous()} disabled={!hasPrevious && currentTime <= 3} aria-label="Previous Beat" className="grid h-9 w-9 place-items-center text-white disabled:text-mist/25"><SkipBack className="h-4 w-4" fill="currentColor" /></button>

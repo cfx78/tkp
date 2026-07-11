@@ -18,7 +18,7 @@ export const homepageSettingsQuery = groq`*[_type == "homepageSettings"][0]{
   }
 }`;
 
-export const latestBeatQuery = groq`*[_type == "beat" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
+export const latestBeatQuery = groq`*[_type == "beat" && nsfw != true && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]] | order(coalesce(publishedAt, _createdAt) desc)[0]{
   _id, title, "slug": slug.current, status, shortNote, publishedAt,
   coverArt${imageProjection},
   lane->{_id, name, "slug": slug.current, primaryColor, fallbackCoverArt${imageProjection}}
@@ -45,6 +45,22 @@ const playerBeatProjection = groq`{
 export const mainLibraryBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo"]] | order(coalesce(publishedAt, _createdAt) desc)${playerBeatProjection}`;
 
 export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]] | order(coalesce(publishedAt, _createdAt) desc)${playerBeatProjection}`;
+
+export const beatFileQuery = groq`*[_type == "beat" && slug.current == $slug && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]][0]{
+  _id, title, "slug": slug.current, status, shortNote, publishedAt, nsfw, nsfwReason,
+  "coverArtUrl": coverArt.asset->url,
+  lane->{name, "slug": slug.current, primaryColor, secondaryColor, "fallbackCoverArtUrl": fallbackCoverArt.asset->url},
+  "releases": *[_type == "release" && (references(^._id) || _id in ^.releaseRefs[]._ref)] | order(coalesce(publishedAt, _createdAt) desc){
+    _id, title, "slug": slug.current, releaseType, "coverArtUrl": coverArt.asset->url
+  },
+  "tags": coalesce(tags[]->{name, "slug": slug.current, group}, []),
+  "relatedFixations": coalesce(relatedFixations[]->{_id, title, "slug": slug.current, shortDescription}, []),
+  "relatedLogs": coalesce(relatedLogs[]->{_id, title, body, bullets, logType, publishedAt}, []),
+  "relatedLinks": coalesce(relatedLinks[]->{_id, title, url, platformAuto, platformOverride, note}, []),
+  "relatedPlaylists": coalesce(relatedPlaylists[]->{_id, title, "slug": slug.current, spotifyUrl, appleMusicUrl, youtubeMusicUrl, shortNote}, []),
+  "relatedQuotes": coalesce(relatedQuotes[]->{_id, quoteText, person, sourceTitle, sourceUrl}, []),
+  "versions": coalesce(versions[]{title, note, versionType, createdAt, nsfw, nsfwReason}, [])
+}`;
 
 export const latestLinkQuery = groq`*[_type == "link" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
   _id, title, url, platformAuto, platformOverride, note, publishedAt
