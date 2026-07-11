@@ -18,6 +18,7 @@ const navItems = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { beat } = usePlayer();
+  const isNowPlaying = pathname === '/player/now-playing';
 
   if (pathname.startsWith('/studio')) {
     return <>{children}</>;
@@ -25,11 +26,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-ink text-mist">
-      <div className={clsx('mx-auto flex min-h-screen max-w-6xl flex-col px-4 pt-8 sm:px-6 lg:px-8', beat ? 'pb-52' : 'pb-28')}>
+      <div className={clsx('mx-auto flex min-h-screen max-w-6xl flex-col px-4 pt-8 sm:px-6 lg:px-8', beat && !isNowPlaying ? 'pb-52' : 'pb-28')}>
         <div className="flex-1">{children}</div>
       </div>
 
-      <MiniPlayer />
+      {isNowPlaying ? null : <MiniPlayer />}
 
       <nav aria-label="Primary navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-ink/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
         <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 px-2 py-2">

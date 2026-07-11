@@ -69,8 +69,21 @@ export const lanesQuery = groq`*[_type == "lane"] | order(sortOrder asc, name as
 
 export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
   _id, title, "slug": slug.current, releaseType, shortDescription, publishedAt,
-  "coverArtUrl": coverArt.asset->url, lane->{_id, name, "slug": slug.current},
-  "beats": beats[]->[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]]${playerBeatProjection}
+  coverArt${imageProjection}, "coverArtUrl": coverArt.asset->url,
+  lane->{_id, name, "slug": slug.current},
+  "beats": beats[]->{
+    _id,
+    title,
+    "slug": slug.current,
+    status,
+    "audioAvailable": defined(audioObjectKey),
+    "coverArtUrl": coverArt.asset->url,
+    lane->{
+      name,
+      "slug": slug.current,
+      "fallbackCoverArtUrl": fallbackCoverArt.asset->url
+    }
+  }
 }`;
 
 export const logsQuery = groq`*[_type == "log" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){

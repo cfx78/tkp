@@ -1,10 +1,11 @@
 'use client';
 
-import { Maximize2, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
+import Link from 'next/link';
+import { LoaderCircle, Maximize2, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { usePlayer } from './player-provider';
 
 export function MiniPlayer() {
-  const { beat, isLoading, isPlaying, currentTime, duration, error, togglePlayback, seek, previous, next, hasPrevious, hasNext } = usePlayer();
+  const { beat, isLoading, isPlaying, isQueueComplete, currentTime, duration, error, togglePlayback, seek, previous, next, hasPrevious, hasNext } = usePlayer();
   if (!beat) return null;
 
   const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
@@ -17,16 +18,16 @@ export function MiniPlayer() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-white">{beat.title}</p>
-          <p className="truncate text-xs text-mist/55">{beat.lane?.name || 'Unassigned lane'}</p>
+          <p className="truncate text-xs text-mist/55">{isQueueComplete ? 'Queue complete' : beat.lane?.name || 'Unassigned lane'}</p>
         </div>
         <button type="button" onClick={() => void previous()} disabled={!hasPrevious && currentTime <= 3} aria-label="Previous Beat" className="grid h-9 w-9 place-items-center text-white disabled:text-mist/25"><SkipBack className="h-4 w-4" fill="currentColor" /></button>
         <button type="button" onClick={() => void togglePlayback()} disabled={isLoading} aria-label={isPlaying ? 'Pause' : 'Play'} className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink disabled:opacity-50">
-          {isPlaying ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
+          {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : isPlaying ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
         </button>
         <button type="button" onClick={() => void next()} disabled={!hasNext} aria-label="Next Beat" className="grid h-9 w-9 place-items-center text-white disabled:text-mist/25"><SkipForward className="h-4 w-4" fill="currentColor" /></button>
-        <button type="button" disabled aria-label="Full player coming later" className="grid h-10 w-10 place-items-center rounded-full border border-white/10 text-mist/40">
+        <Link href="/player/now-playing" aria-label="Open Now Playing" className="grid h-10 w-10 place-items-center rounded-full border border-white/10 text-mist/70 transition hover:bg-white/10 hover:text-white">
           <Maximize2 className="h-4 w-4" />
-        </button>
+        </Link>
       </div>
       <input
         className="mt-2 h-1 w-full cursor-pointer accent-cobalt"

@@ -17,6 +17,7 @@ export type PlayerBeat = {
 };
 
 export type PlaybackContextType = 'main-library' | 'all-beats' | 'release' | 'manual';
+export type RepeatMode = 'off' | 'all' | 'one';
 
 export type PlaybackContext = {
   type: PlaybackContextType;
