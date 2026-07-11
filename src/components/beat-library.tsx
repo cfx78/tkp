@@ -12,19 +12,19 @@ export function BeatLibrary({ beats, contextType, contextTitle }: { beats: Playe
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid w-full min-w-0 max-w-full grid-cols-1 gap-3 sm:grid-cols-2">
       {beats.map((beat) => {
         const selected = player.beat?._id === beat._id;
         const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
         return (
-          <article key={beat._id} className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <article key={beat._id} className="flex w-full min-w-0 max-w-full items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">
               {cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-semibold text-white">{beat.title}</h3>
-              <p className="mt-1 truncate text-xs text-mist/55">{beat.lane?.name || 'Unassigned lane'}</p>
-              {beat.releases?.[0] ? <p className="mt-1 truncate text-xs text-cobalt">{beat.releases[0].title}</p> : null}
+              <h3 className="max-w-full truncate font-semibold text-white">{beat.title}</h3>
+              <p className="mt-1 max-w-full truncate text-xs text-mist/55">{beat.lane?.name || 'Unassigned lane'}</p>
+              {beat.releases?.[0] ? <p className="mt-1 max-w-full truncate text-xs text-cobalt">{beat.releases[0].title}</p> : null}
             </div>
             <button
               type="button"

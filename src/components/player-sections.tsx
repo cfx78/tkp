@@ -26,6 +26,6 @@ export function PlayerSections({ mainLibrary, allBeats, releases }: { mainLibrar
     <PlaybackQueue />
   </>;
 }
-function Library({ title, beats, type }: { title: string; beats: PlayerBeat[]; type: 'main-library' | 'all-beats' }) { return <section><h2 className="text-xl font-semibold text-white">{title}</h2><div className="mt-3"><BeatLibrary beats={beats} contextType={type} contextTitle={title} /></div></section>; }
+function Library({ title, beats, type }: { title: string; beats: PlayerBeat[]; type: 'main-library' | 'all-beats' }) { return <section className="w-full min-w-0 max-w-full"><h2 className="text-xl font-semibold text-white">{title}</h2><div className="mt-3 w-full min-w-0 max-w-full"><BeatLibrary beats={beats} contextType={type} contextTitle={title} /></div></section>; }
 function Artwork({ url, size }: { url?: string; size: string }) { return <span className={`${size} block shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30`}>{url ? <img src={url} alt="" className="h-full w-full object-cover" /> : null}</span>; }
 function Empty({ text }: { text: string }) { return <p className="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-mist/60">{text}</p>; }
