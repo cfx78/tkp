@@ -1,46 +1,11 @@
 'use client';
-
 import Link from 'next/link';
 import { LoaderCircle, Maximize2, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { usePlayer } from './player-provider';
-
 export function MiniPlayer() {
-  const { beat, isLoading, isPlaying, isQueueComplete, currentTime, duration, error, togglePlayback, seek, previous, next, hasPrevious, hasNext } = usePlayer();
-  if (!beat) return null;
-
-  const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
-
-  return (
-    <aside className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-xl rounded-2xl border border-white/10 bg-[#0a0d14]/95 p-3 shadow-[0_-14px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-      <div className="flex items-center gap-3">
-        {beat.slug ? <Link href={`/player/beats/${beat.slug}`} aria-label={`Open Beat File for ${beat.title}`} className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">
-          {cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}
-        </Link> : <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-cobalt/40 to-ember/30">{cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}</div>}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-white">{beat.slug ? <Link href={`/player/beats/${beat.slug}`}>{beat.title}</Link> : beat.title}</p>
-          <p className="truncate text-xs text-mist/55">{isQueueComplete ? 'Queue complete' : beat.sourceType === 'version' ? `CONTEXT · ${beat.lane?.name || 'Unassigned lane'}` : beat.lane?.name || 'Unassigned lane'}</p>
-        </div>
-        <button type="button" onClick={() => void previous()} disabled={!hasPrevious && currentTime <= 3} aria-label="Previous Beat" className="grid h-9 w-9 place-items-center text-white disabled:text-mist/25"><SkipBack className="h-4 w-4" fill="currentColor" /></button>
-        <button type="button" onClick={() => void togglePlayback()} disabled={isLoading} aria-label={isPlaying ? 'Pause' : 'Play'} className="grid h-10 w-10 place-items-center rounded-full bg-white text-ink disabled:opacity-50">
-          {isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : isPlaying ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
-        </button>
-        <button type="button" onClick={() => void next()} disabled={!hasNext} aria-label="Next Beat" className="grid h-9 w-9 place-items-center text-white disabled:text-mist/25"><SkipForward className="h-4 w-4" fill="currentColor" /></button>
-        <Link href="/player/now-playing" aria-label="Open Now Playing" className="grid h-10 w-10 place-items-center rounded-full border border-white/10 text-mist/70 transition hover:bg-white/10 hover:text-white">
-          <Maximize2 className="h-4 w-4" />
-        </Link>
-      </div>
-      <input
-        className="mt-2 h-1 w-full cursor-pointer accent-cobalt"
-        type="range"
-        min={0}
-        max={duration || 0}
-        step={0.1}
-        value={Math.min(currentTime, duration || 0)}
-        onChange={(event) => seek(Number(event.target.value))}
-        aria-label="Playback progress"
-        disabled={!duration}
-      />
-      {error ? <p className="mt-2 text-xs text-red-300">{error}</p> : null}
-    </aside>
-  );
+  const { beat, isLoading, isPlaying, isQueueComplete, currentTime, duration, error, togglePlayback, seek, previous, next, hasPrevious, hasNext } = usePlayer(); if (!beat) return null;
+  const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl; const progress = duration > 0 ? Math.min(100, Math.max(0, currentTime / duration * 100)) : 0;
+  const artwork = <span className="block h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)]">{cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}</span>;
+  return <aside className="fixed inset-x-2 bottom-[var(--mini-player-offset)] z-40 mx-auto max-w-xl bg-[var(--surface-overlay)] px-2 pb-1 pt-2 shadow-[0_-10px_28px_rgba(0,0,0,0.38)] sm:inset-x-3 sm:px-3"><div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1"><div className="flex min-w-0 items-center gap-2">{beat.slug ? <Link href={`/player/beats/${beat.slug}`} aria-label={`Open Beat File for ${beat.title}`}>{artwork}</Link> : artwork}<div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-[var(--text-primary)] sm:text-sm">{beat.slug ? <Link href={`/player/beats/${beat.slug}`}>{beat.title}</Link> : beat.title}</p><p className="type-metadata mt-0.5 truncate text-[9px] sm:text-[10px]">{isQueueComplete ? 'Queue complete' : beat.sourceType === 'version' ? `Context · ${beat.lane?.name || 'Unassigned lane'}` : beat.lane?.name || 'Unassigned lane'}</p></div></div><div className="flex shrink-0 items-center"><Control label="Previous Beat" onClick={() => void previous()} disabled={!hasPrevious && currentTime <= 3}><SkipBack className="h-4 w-4" fill="currentColor" /></Control><Control label={isPlaying ? 'Pause' : 'Play'} onClick={() => void togglePlayback()} disabled={isLoading}>{isLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : isPlaying ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}</Control><Control label="Next Beat" onClick={() => void next()} disabled={!hasNext}><SkipForward className="h-4 w-4" fill="currentColor" /></Control><Link href="/player/now-playing" aria-label="Open Now Playing" className="grid h-11 w-11 place-items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><Maximize2 className="h-4 w-4" /></Link></div></div><div className="relative mt-1 h-2"><div aria-hidden="true" className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/10"><span className="block h-full bg-[var(--accent)]" style={{ width: `${progress}%` }} /></div><input className="absolute inset-x-0 -top-[18px] h-11 w-full cursor-pointer opacity-0" type="range" min={0} max={duration || 0} step={0.1} value={Math.min(currentTime, duration || 0)} onChange={(event) => seek(Number(event.target.value))} aria-label="Playback progress" disabled={!duration} /></div>{error ? <p className="pb-1 text-xs text-[var(--danger)]">{error}</p> : null}</aside>;
 }
+function Control({ label, onClick, disabled, children }: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) { return <button type="button" onClick={onClick} disabled={disabled} aria-label={label} className="grid h-11 w-11 place-items-center text-[var(--text-primary)] disabled:text-[var(--text-muted)] disabled:opacity-40">{children}</button>; }

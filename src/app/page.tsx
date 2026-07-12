@@ -37,7 +37,7 @@ export default async function HomePage() {
 
     <section className="mt-[var(--section-rhythm)]"><SectionHeading label="Featured Fixations" title="Rabbit holes in focus" /><div className="mt-7">{settings?.featuredFixations?.length ? settings.featuredFixations.map((fixation, index) => <FeaturedFixation key={fixation._id} fixation={fixation} primary={index === 0} index={index} />) : <p className="type-small border-y border-[var(--line-subtle)] py-6">No featured fixations yet.</p>}</div></section>
 
-    <section className="mt-[var(--section-rhythm)]"><div className="flex items-end justify-between gap-4"><SectionHeading label="Latest Logs" title="Recent signals" /><Link href="/logs" className="type-metadata inline-flex min-h-11 items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]">View All Logs <ArrowUpRight className="ml-2 h-4 w-4" /></Link></div><div className="mt-6 border-t border-[var(--line-subtle)]"><FeedEntry label="Latest Link" item={link} href={link?.url} external /><PlaylistEntry item={playlist} /><FeedEntry label="Latest Thought" item={thought} href="/logs" /></div></section>
+    <section className="mt-[var(--section-rhythm)]"><div className="flex items-end justify-between gap-4"><SectionHeading label="Latest Logs" title="Recent entries" /><Link href="/logs" className="type-metadata inline-flex min-h-11 items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]">View All Logs <ArrowUpRight className="ml-2 h-4 w-4" /></Link></div><div className="mt-6 border-t border-[var(--line-subtle)]"><FeedEntry label="Latest Link" item={link} href={link?.url} external /><PlaylistEntry item={playlist} /><FeedEntry label="Latest Thought" item={thought} href="/logs" /></div></section>
   </main>;
 }
 

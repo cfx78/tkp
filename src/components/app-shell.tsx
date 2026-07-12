@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="public-app-shell min-h-screen bg-transparent text-[var(--text-primary)]">
-      <div className={clsx('mx-auto flex min-h-screen max-w-[var(--shell-max)] flex-col px-[var(--page-inset-mobile)] pt-7 sm:pt-10', beat && !isNowPlaying ? 'pb-52' : 'pb-28')}>
+      <div className={clsx('mx-auto flex min-h-screen max-w-[var(--shell-max)] flex-col px-[var(--page-inset-mobile)] pt-7 sm:pt-10', beat && !isNowPlaying ? 'pb-[calc(var(--bottom-nav-height)+var(--safe-area-bottom)+8rem)]' : 'pb-28')}>
         <div className="flex-1">{children}</div>
       </div>
 
