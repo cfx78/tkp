@@ -5,10 +5,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#05070d',
-        mist: '#f4efe7',
-        ember: '#ff8a3d',
-        cobalt: '#5b7cff'
+        background: 'var(--bg-0)',
+        surface: 'var(--bg-2)',
+        primary: 'var(--text-primary)',
+        secondary: 'var(--text-secondary)',
+        muted: 'var(--text-muted)',
+        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
+        /* Phase 0 compatibility aliases for existing components. */
+        ink: 'var(--bg-0)',
+        mist: 'rgb(244 246 248 / <alpha-value>)',
+        ember: 'rgb(217 135 75 / <alpha-value>)',
+        cobalt: 'rgb(var(--accent-rgb) / <alpha-value>)'
       },
       boxShadow: {
         soft: '0 20px 60px rgba(0, 0, 0, 0.28)'
