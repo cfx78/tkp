@@ -25,15 +25,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-ink text-mist">
-      <div className={clsx('mx-auto flex min-h-screen max-w-6xl flex-col px-4 pt-8 sm:px-6 lg:px-8', beat && !isNowPlaying ? 'pb-52' : 'pb-28')}>
+    <div className="public-app-shell min-h-screen bg-transparent text-[var(--text-primary)]">
+      <div className={clsx('mx-auto flex min-h-screen max-w-[var(--shell-max)] flex-col px-[var(--page-inset-mobile)] pt-7 sm:pt-10', beat && !isNowPlaying ? 'pb-52' : 'pb-28')}>
         <div className="flex-1">{children}</div>
       </div>
 
       {isNowPlaying ? null : <MiniPlayer />}
 
-      <nav aria-label="Primary navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-ink/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-        <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 px-2 py-2">
+      <nav aria-label="Primary navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line-subtle)] bg-[var(--surface-overlay)] pb-[var(--safe-area-bottom)] shadow-[0_-12px_36px_rgba(0,0,0,0.4)]">
+        <div className="mx-auto grid min-h-[var(--bottom-nav-height)] max-w-xl grid-cols-5 px-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -44,10 +44,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 aria-current={isActive ? 'page' : undefined}
                 className={clsx(
-                  'flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-center text-[10px] font-medium tracking-[0.08em] uppercase transition',
+                  'relative flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-center type-navigation transition-[color,opacity,transform] duration-[var(--motion-ui)] ease-[var(--ease-ui)] after:absolute after:inset-x-[30%] after:top-0 after:h-px after:bg-transparent after:content-["\"]',
                   isActive
-                    ? 'bg-white/10 text-white shadow-soft'
-                    : 'text-mist/65 hover:bg-white/10 hover:text-white'
+                    ? '-translate-y-px text-[var(--text-primary)] after:bg-[var(--accent)]'
+                    : 'text-[var(--text-muted)] opacity-80 hover:text-[var(--text-primary)] hover:opacity-100'
                 )}
               >
                 <Icon aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />

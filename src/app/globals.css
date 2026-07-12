@@ -194,6 +194,16 @@ input[type="range"]:focus-visible {
   body { background-attachment: scroll; }
 }
 
+/* The document owns public-page scrolling. Hide only its visible scrollbar
+   when the public shell is mounted; Studio and nested scrollers are untouched. */
+html:has(.public-app-shell) {
+  scrollbar-width: none;
+}
+
+html:has(.public-app-shell)::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-ui: 0ms;

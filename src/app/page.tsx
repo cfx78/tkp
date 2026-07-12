@@ -1,111 +1,46 @@
-import { fetchSanity, type FixationSummary, type HomepageSettings } from '@/src/sanity/lib/content';
-import { SpotifyPlaylistEmbed } from '@/src/components/spotify-playlist-embed';
 import Link from 'next/link';
-import {
-  homepageSettingsQuery,
-  latestBeatQuery,
-  latestLinkQuery,
-  latestPlaylistQuery,
-  latestThoughtQuery
-} from '@/src/sanity/lib/queries';
+import { ArrowUpRight } from 'lucide-react';
+import { HomeBeatPlay } from '@/src/components/home-beat-play';
+import { HairlineDivider, MediaArtwork, ProtocolLabel, SectionHeading } from '@/src/components/presentation-primitives';
+import { SpotifyPlaylistEmbed } from '@/src/components/spotify-playlist-embed';
+import { fetchSanity, type FixationSummary, type HomepageSettings, type ImageValue } from '@/src/sanity/lib/content';
+import { homepageSettingsQuery, latestBeatQuery, latestLinkQuery, latestPlaylistQuery, latestThoughtQuery } from '@/src/sanity/lib/queries';
+import type { PlayerBeat } from '@/src/types/player';
 
-type LatestItem = { _id: string; title?: string; slug?: string; body?: string; note?: string; shortNote?: string; url?: string; spotifyUrl?: string; spotifyEmbedUrl?: string };
+type Lane = { name?: string; slug?: string; primaryColor?: string; fallbackCoverArt?: ImageValue };
+type LatestItem = { _id: string; title?: string; slug?: string; status?: string; body?: string; note?: string; shortNote?: string; url?: string; spotifyUrl?: string; spotifyEmbedUrl?: string; coverArt?: ImageValue; lane?: Lane };
+const destinations = [{ href: '/', label: 'Home', note: 'Current signal' }, { href: '/player', label: 'Player', note: 'Beats and listening' }, { href: '/logs', label: 'Logs', note: 'Thoughts and fragments' }, { href: '/fixations', label: 'Fixations', note: 'Current rabbit holes' }, { href: '/search', label: 'Search', note: 'Recall the archive' }];
 
 export default async function HomePage() {
   const [settings, beat, link, playlist, thought] = await Promise.all([
-    fetchSanity<HomepageSettings | null>(homepageSettingsQuery, null),
-    fetchSanity<LatestItem | null>(latestBeatQuery, null),
-    fetchSanity<LatestItem | null>(latestLinkQuery, null),
-    fetchSanity<LatestItem | null>(latestPlaylistQuery, null),
-    fetchSanity<LatestItem | null>(latestThoughtQuery, null)
+    fetchSanity<HomepageSettings | null>(homepageSettingsQuery, null), fetchSanity<LatestItem | null>(latestBeatQuery, null), fetchSanity<LatestItem | null>(latestLinkQuery, null), fetchSanity<LatestItem | null>(latestPlaylistQuery, null), fetchSanity<LatestItem | null>(latestThoughtQuery, null)
   ]);
+  const announcement = settings?.releaseAnnouncement; const now = Date.now();
+  const announcementIsActive = Boolean(announcement?.enabled && announcement.release && (!announcement.startAt || new Date(announcement.startAt).getTime() <= now) && (!announcement.endAt || new Date(announcement.endAt).getTime() >= now));
+  const beatArtwork = beat?.coverArt?.asset?.url || beat?.lane?.fallbackCoverArt?.asset?.url;
+  const playerBeat: PlayerBeat | null = beat ? { _id: beat._id, title: beat.title || 'Untitled Beat', slug: beat.slug, status: beat.status, coverArtUrl: beat.coverArt?.asset?.url, lane: { name: beat.lane?.name, slug: beat.lane?.slug, fallbackCoverArtUrl: beat.lane?.fallbackCoverArt?.asset?.url } } : null;
 
-  const announcement = settings?.releaseAnnouncement;
-  const now = Date.now();
-  const announcementIsActive = Boolean(
-    announcement?.enabled &&
-      announcement.release &&
-      (!announcement.startAt || new Date(announcement.startAt).getTime() <= now) &&
-      (!announcement.endAt || new Date(announcement.endAt).getTime() >= now)
-  );
+  return <main className="mx-auto w-full max-w-5xl pb-6">
+    <section aria-labelledby="home-title" className="grid min-h-[25rem] content-between gap-14 pb-10 pt-5 sm:min-h-[30rem] sm:grid-cols-[minmax(0,1.25fr)_minmax(14rem,.75fr)] sm:items-end sm:gap-12 sm:pb-16">
+      <div className="max-w-2xl self-start sm:pt-10"><ProtocolLabel>Private media archive</ProtocolLabel><h1 id="home-title" className="type-display mt-5 max-w-xl">The Kitsune Protocol</h1><p className="type-small mt-6 max-w-md">My beats, my rabbit holes, and where my head is right now.</p></div>
+      <nav aria-label="Homepage destinations" className="self-end border-t border-[var(--line-subtle)]">{destinations.map((item, index) => <Link key={item.href} href={item.href} aria-current={item.href === '/' ? 'page' : undefined} className="group grid min-h-14 grid-cols-[2rem_1fr_auto] items-center gap-3 border-b border-[var(--line-subtle)] py-3 transition-colors duration-[var(--motion-ui)] hover:text-[var(--accent)]"><span className="type-numeric">0{index + 1}</span><span><span className="block text-base font-medium">{item.label}</span><span className="type-metadata mt-0.5 block normal-case tracking-normal">{item.note}</span></span><ArrowUpRight className="h-4 w-4 text-[var(--text-muted)] transition-transform duration-[var(--motion-ui)] group-hover:-translate-y-px group-hover:translate-x-px" /></Link>)}</nav>
+    </section>
 
-  return (
-    <main className="flex flex-col gap-6">
-      <section className="rounded-2xl border border-cobalt/20 bg-cobalt/10 px-4 py-3">
-        <p className="text-[10px] uppercase tracking-[0.32em] text-cobalt">Current phase</p>
-        <p className="mt-1 text-sm text-mist/80">{settings?.currentPhaseText || 'The next phase is still taking shape.'}</p>
-      </section>
+    <section aria-label="Current Phase" className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-y border-[var(--line-subtle)] py-3"><ProtocolLabel className="text-[var(--text-muted)]">Current Phase</ProtocolLabel><p className="type-small">{settings?.currentPhaseText || 'The next phase is still taking shape.'}</p></section>
 
-      {announcementIsActive && (
-        <section className="rounded-[1.75rem] border border-ember/30 bg-ember/10 p-6">
-          <p className="text-[11px] uppercase tracking-[0.32em] text-ember">New release</p>
-          <h1 className="mt-3 text-2xl font-semibold text-white">
-            {announcement?.headline || announcement?.release?.title}
-          </h1>
-        </section>
-      )}
+    {announcementIsActive ? <section className="mt-[var(--section-rhythm)] border-l-2 border-[var(--warning)] bg-[var(--warning)]/10 px-5 py-5 sm:flex sm:items-center sm:justify-between sm:gap-8"><div><ProtocolLabel className="text-[var(--warning)]">New Release Broadcast</ProtocolLabel><h2 className="mt-2 text-xl font-semibold text-[var(--text-primary)]">{announcement?.headline || announcement?.release?.title}</h2></div>{announcement?.release?.slug ? <span className="type-metadata mt-3 block sm:mt-0">{announcement.release.title}</span> : null}</section> : null}
 
-      <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-soft backdrop-blur">
-        <p className="text-[11px] uppercase tracking-[0.35em] text-cobalt">Latest beat</p>
-        <h1 className="mt-3 text-3xl font-semibold text-white">{beat?.slug ? <Link href={`/player/beats/${beat.slug}`} className="hover:text-cobalt">{beat.title}</Link> : beat?.title || 'No beats published yet'}</h1>
-        <p className="mt-3 text-sm text-mist/70">{beat?.shortNote || 'The latest beat will appear here when the archive is ready.'}</p>
-      </section>
+    <section className="mt-[var(--section-rhythm)] grid items-center gap-8 sm:grid-cols-[minmax(16rem,.9fr)_minmax(0,1.1fr)] sm:gap-14">
+      <div className="relative mx-auto w-fit sm:mx-0"><div aria-hidden="true" className="absolute inset-[12%] -z-10 bg-[var(--artwork-halo)] blur-3xl" /><MediaArtwork src={beatArtwork} alt="" size="feature" className="shadow-[var(--artwork-bloom)]" /></div>
+      <div className="min-w-0"><ProtocolLabel>Latest Beat</ProtocolLabel><h2 className="mt-4 break-words text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-[var(--text-primary)] sm:text-5xl">{beat?.slug ? <Link href={`/player/beats/${beat.slug}`} className="hover:text-[var(--accent)]">{beat.title}</Link> : beat?.title || 'No beats published yet'}</h2><p className="type-metadata mt-4">{beat?.lane?.name || 'The archive is waiting'}</p>{beat?.shortNote ? <p className="type-small mt-5 max-w-lg">{beat.shortNote}</p> : null}<div className="mt-7 flex flex-wrap gap-3">{playerBeat ? <HomeBeatPlay beat={playerBeat} /> : null}{beat?.slug ? <Link href={`/player/beats/${beat.slug}`} className="focusable-surface inline-flex min-h-11 items-center px-4 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Open Beat File <ArrowUpRight className="ml-2 h-4 w-4" /></Link> : null}</div></div>
+    </section>
 
-      <section>
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.32em] text-ember">Featured fixations</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">Rabbit holes in focus</h2>
-          </div>
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          {(settings?.featuredFixations?.length ? settings.featuredFixations : [null]).map((fixation: FixationSummary | null, index) => (
-            <article key={fixation?._id || index} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
-              <p className="text-lg font-semibold text-white">{fixation?.title || 'No featured fixations yet'}</p>
-              <p className="mt-2 text-sm leading-6 text-mist/70">
-                {fixation?.shortDescription || 'Selected fixations will appear here once homepage settings are published.'}
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
+    <section className="mt-[var(--section-rhythm)]"><SectionHeading label="Featured Fixations" title="Rabbit holes in focus" /><div className="mt-7">{settings?.featuredFixations?.length ? settings.featuredFixations.map((fixation, index) => <FeaturedFixation key={fixation._id} fixation={fixation} primary={index === 0} index={index} />) : <p className="type-small border-y border-[var(--line-subtle)] py-6">No featured fixations yet.</p>}</div></section>
 
-      <section>
-        <p className="text-[11px] uppercase tracking-[0.32em] text-cobalt">Latest logs</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <LatestCard label="Latest link" item={link} empty="No links saved yet" />
-          <PlaylistCard item={playlist} />
-          <LatestCard label="Latest thought" item={thought} empty="No thoughts published yet" />
-        </div>
-      </section>
-    </main>
-  );
+    <section className="mt-[var(--section-rhythm)]"><div className="flex items-end justify-between gap-4"><SectionHeading label="Latest Logs" title="Recent signals" /><Link href="/logs" className="type-metadata inline-flex min-h-11 items-center text-[var(--text-secondary)] hover:text-[var(--text-primary)]">View All Logs <ArrowUpRight className="ml-2 h-4 w-4" /></Link></div><div className="mt-6 border-t border-[var(--line-subtle)]"><FeedEntry label="Latest Link" item={link} href={link?.url} external /><PlaylistEntry item={playlist} /><FeedEntry label="Latest Thought" item={thought} href="/logs" /></div></section>
+  </main>;
 }
 
-function PlaylistCard({ item }: { item: LatestItem | null }) {
-  return (
-    <article className="rounded-[1.5rem] border border-white/10 bg-[#0a0d14]/80 p-5">
-      <p className="text-[10px] uppercase tracking-[0.28em] text-mist/50">Latest playlist</p>
-      <h3 className="mt-3 font-semibold text-white">{item?.title || 'No playlists saved yet'}</h3>
-      {item ? (
-        <SpotifyPlaylistEmbed title={item.title || 'Spotify playlist'} spotifyUrl={item.spotifyUrl} spotifyEmbedUrl={item.spotifyEmbedUrl} />
-      ) : (
-        <p className="mt-2 text-sm leading-6 text-mist/70">Content will appear here automatically.</p>
-      )}
-    </article>
-  );
-}
-
-function LatestCard({ label, item, empty }: { label: string; item: LatestItem | null; empty: string }) {
-  const untitledLabel = item?.url ? 'Saved link' : 'Untitled thought';
-
-  return (
-    <article className="rounded-[1.5rem] border border-white/10 bg-[#0a0d14]/80 p-5">
-      <p className="text-[10px] uppercase tracking-[0.28em] text-mist/50">{label}</p>
-      <h3 className="mt-3 font-semibold text-white">{item ? item.title || untitledLabel : empty}</h3>
-      <p className="mt-2 line-clamp-3 text-sm leading-6 text-mist/70">
-        {item?.body || item?.note || item?.shortNote || item?.url || 'Content will appear here automatically.'}
-      </p>
-    </article>
-  );
-}
+function FeaturedFixation({ fixation, primary, index }: { fixation: FixationSummary; primary: boolean; index: number }) { const artwork = fixation.coverImage?.asset?.url; return <article className={`grid gap-5 border-b border-[var(--line-subtle)] py-6 ${primary ? 'sm:grid-cols-[minmax(13rem,.7fr)_minmax(0,1.3fr)] sm:items-center sm:py-8' : 'sm:grid-cols-[4rem_1fr_auto] sm:items-center'}`}>{primary ? <div className="aspect-[16/10] overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)]">{artwork ? <img src={artwork} alt="" className="h-full w-full object-cover" /> : null}</div> : <span className="type-numeric hidden sm:block">0{index + 1}</span>}<div><ProtocolLabel className="text-[var(--text-muted)]">{fixation.isCore ? 'Core Fixation' : fixation.status || 'Active'}</ProtocolLabel><h3 className={`${primary ? 'mt-3 text-2xl sm:text-3xl' : 'mt-2 text-xl'} font-semibold text-[var(--text-primary)]`}>{fixation.title}</h3>{fixation.shortDescription ? <p className="type-small mt-3 max-w-xl">{fixation.shortDescription}</p> : null}</div><Link href="/fixations" className="focusable-surface inline-flex min-h-11 w-fit items-center text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent)]">Open Fixations <ArrowUpRight className="ml-2 h-4 w-4" /></Link></article>; }
+function FeedEntry({ label, item, href, external = false }: { label: string; item: LatestItem | null; href?: string; external?: boolean }) { const title = item ? item.title || (item.url ? 'Saved link' : 'Untitled thought') : label === 'Latest Link' ? 'No links saved yet' : 'No thoughts published yet'; const content = <><ProtocolLabel className="text-[var(--text-muted)]">{label}</ProtocolLabel><h3 className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{title}</h3><p className="type-small mt-2 line-clamp-2 max-w-2xl">{item?.body || item?.note || item?.shortNote || item?.url || 'Content will appear here automatically.'}</p></>; return <article className="grid gap-3 border-b border-[var(--line-subtle)] py-5 sm:grid-cols-[1fr_auto] sm:items-center"><div>{content}</div>{item && href ? external ? <a href={href} target="_blank" rel="noreferrer noopener" className="focusable-surface inline-flex min-h-11 w-fit items-center text-sm text-[var(--text-secondary)] hover:text-[var(--accent)]">Open <ArrowUpRight className="ml-2 h-4 w-4" /></a> : <Link href={href} className="focusable-surface inline-flex min-h-11 w-fit items-center text-sm text-[var(--text-secondary)] hover:text-[var(--accent)]">Open <ArrowUpRight className="ml-2 h-4 w-4" /></Link> : null}</article>; }
+function PlaylistEntry({ item }: { item: LatestItem | null }) { return <article className="grid gap-4 border-b border-[var(--line-subtle)] py-5 sm:grid-cols-[minmax(0,.75fr)_minmax(16rem,1.25fr)] sm:items-start"><div><ProtocolLabel className="text-[var(--text-muted)]">Latest Playlist</ProtocolLabel><h3 className="mt-2 text-lg font-semibold text-[var(--text-primary)]">{item?.title || 'No playlists saved yet'}</h3>{item?.shortNote ? <p className="type-small mt-2">{item.shortNote}</p> : null}</div>{item ? <SpotifyPlaylistEmbed title={item.title || 'Spotify playlist'} spotifyUrl={item.spotifyUrl} spotifyEmbedUrl={item.spotifyEmbedUrl} /> : <p className="type-small">Content will appear here automatically.</p>}</article>; }
