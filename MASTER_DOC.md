@@ -14,6 +14,32 @@ The goal is to build a lightweight, mobile-first personal PWA that acts as:
 
 The project should stay focused. Do not overbuild. Do not add social features, user accounts, comments, likes, recommendation engines, or extra schemas unless explicitly requested later.
 
+
+---
+
+## Visual Direction Authority
+
+The final visual and interaction direction is defined in
+`UI_AESTHETIC_BRIEF.md`.
+
+That document supersedes any conflicting visual-language descriptions in
+this master document, including broader references to cyberpunk, vice,
+retro-futurism, or card-based dashboard styling.
+
+This document remains authoritative for:
+
+- product architecture
+- routes and navigation
+- schemas and content relationships
+- feature scope
+- storage and security
+- implementation phases
+
+The aesthetic brief may change presentation, composition, typography,
+color, motion, and artwork behavior. It must not silently change product
+functionality or information architecture.
+
+
 ---
 
 # 1. Core Identity
