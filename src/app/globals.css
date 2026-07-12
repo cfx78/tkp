@@ -194,6 +194,52 @@ input[type="range"]:focus-visible {
   body { background-attachment: scroll; }
 }
 
+.listening-mode {
+  animation: listening-mode-enter var(--motion-listening) var(--ease-ui) both;
+  isolation: isolate;
+  overscroll-behavior: contain;
+}
+
+.listening-mode__ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background:
+    radial-gradient(ellipse 70% 52% at 48% 38%, rgba(var(--listening-accent-rgb) / 0.1), transparent 68%),
+    radial-gradient(ellipse 38% 46% at 78% 76%, color-mix(in srgb, var(--listening-secondary) 7%, transparent), transparent 72%),
+    linear-gradient(160deg, #020307 12%, #050812 58%, #020307 100%);
+  transition: opacity var(--motion-crossfade) var(--ease-ui);
+}
+
+.listening-mode__halo {
+  border-radius: 35%;
+  background: radial-gradient(circle, rgba(var(--listening-accent-rgb) / 0.34), rgba(var(--listening-accent-rgb) / 0.08) 42%, transparent 72%);
+  filter: blur(30px);
+  opacity: 0.62;
+  transform: scale(0.94);
+  transition: opacity var(--motion-crossfade) var(--ease-ui), transform var(--motion-crossfade) var(--ease-ui);
+}
+
+.listening-mode__art-echo {
+  border-radius: var(--radius-artwork);
+  filter: blur(34px) saturate(0.8);
+  opacity: 0.14;
+  transform: translate(14%, 11%) scale(1.04);
+}
+
+.listening-mode.is-playing .listening-mode__halo { animation: listening-halo 14s ease-in-out infinite alternate; opacity: 0.82; }
+.listening-mode.is-playing .listening-mode__art-echo { animation: listening-echo 18s ease-in-out infinite alternate; }
+.listening-mode.is-quiet .listening-mode__ambient { opacity: 0.78; }
+
+@keyframes listening-mode-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes listening-halo { from { transform: translate3d(-1.5%, 0, 0) scale(0.95); } to { transform: translate3d(1.5%, -1%, 0) scale(1.02); } }
+@keyframes listening-echo { from { transform: translate(13%, 11%) scale(1.03); opacity: 0.12; } to { transform: translate(15%, 9%) scale(1.07); opacity: 0.18; } }
+
+@media (max-height: 620px) and (min-width: 560px) {
+  .listening-mode__composition { align-content: start; grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr); gap: 1.5rem; }
+  .listening-mode__art-stage { max-width: min(42vh, 18rem); }
+}
+
 /* The document owns public-page scrolling. Hide only its visible scrollbar
    when the public shell is mounted; Studio and nested scrollers are untouched. */
 html:has(.public-app-shell) {
@@ -219,4 +265,7 @@ html:has(.public-app-shell)::-webkit-scrollbar {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+
+  .listening-mode__art-echo { display: none; }
+  .listening-mode__halo { opacity: 0.58; transform: none; }
 }
