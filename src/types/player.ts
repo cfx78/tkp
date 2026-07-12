@@ -37,3 +37,9 @@ export type PlayerRelease = {
   coverArtUrl?: string;
   beats: PlayerBeat[];
 };
+
+export type ResolvedHistoryItem = PlayerBeat & {
+  sourceType: 'main' | 'version';
+  beatId: string;
+  eligible: true;
+};

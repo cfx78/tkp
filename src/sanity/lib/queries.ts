@@ -46,6 +46,8 @@ export const mainLibraryBeatsQuery = groq`*[_type == "beat" && defined(audioObje
 
 export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]] | order(coalesce(publishedAt, _createdAt) desc)${playerBeatProjection}`;
 
+export const recentlyAddedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]] | order(coalesce(publishedAt, _createdAt) desc)[0...8]${playerBeatProjection}`;
+
 export const beatFileQuery = groq`*[_type == "beat" && slug.current == $slug && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]][0]{
   _id, title, "slug": slug.current, status, shortNote, publishedAt, nsfw, nsfwReason,
   "coverArtUrl": coverArt.asset->url,
