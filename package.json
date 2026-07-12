@@ -2,6 +2,10 @@
   "name": "tkp",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "24.x",
+    "npm": "11.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -26,7 +30,7 @@
     "tailwind-merge": "^2.4.0"
   },
   "devDependencies": {
-    "@types/node": "^20.16.0",
+    "@types/node": "24.13.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
