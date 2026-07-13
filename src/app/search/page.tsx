@@ -4,7 +4,7 @@ import { fixationsQuery, lanesQuery, releasesQuery, searchResultsQuery, tagsQuer
 
 type FilterItem = { _id: string; title?: string; name?: string; group?: string };
 type RawSearchResult = {
-  _id: string; _type: string; title?: string; quoteText?: string; person?: string; status?: string; releaseType?: string; shortDescription?: string; shortNote?: string;
+  _id: string; _type: string; title?: string; name?: string; quoteText?: string; person?: string; status?: string; releaseType?: string; plainDescription?: string; shortDescription?: string; shortNote?: string;
   note?: string; platformAuto?: string; platformOverride?: string; url?: string;
   spotifyUrl?: string; sourceUrl?: string; publishedAt?: string; _createdAt?: string; slug?: string; imageUrl?: string;
   tagIds?: string[]; laneId?: string; relatedLaneIds?: string[]; fixationIds?: string[]; releaseIds?: string[];
@@ -44,7 +44,7 @@ function filters(items: FilterItem[]) {
 }
 
 function normalizeResult(item: RawSearchResult): SearchResult | null {
-  const title = item.title || (item._type === 'quote' ? item.quoteText : undefined);
+  const title = item.title || item.name || (item._type === 'quote' ? item.quoteText : undefined);
   const destination = resultDestination(item);
   if (!title || !destination) return null;
   return {
@@ -52,7 +52,7 @@ function normalizeResult(item: RawSearchResult): SearchResult | null {
     type: typeLabel(item._type),
     title: title.length > 100 ? `${title.slice(0, 97)}…` : title,
     ...destination,
-    subtitle: item.person || item.releaseType || item.status || item.platformOverride || item.platformAuto || item.shortDescription || item.shortNote || item.note,
+    subtitle: item.person || item.releaseType || item.status || item.platformOverride || item.platformAuto || item.plainDescription || item.shortDescription || item.shortNote || item.note,
     imageUrl: item.imageUrl,
     date: item.publishedAt || item._createdAt,
     tagIds: item.tagIds || [],
@@ -65,6 +65,7 @@ function normalizeResult(item: RawSearchResult): SearchResult | null {
 function resultDestination(item: RawSearchResult): { href: string; external?: boolean } | null {
   if (item._type === 'beat' && item.slug) return { href: `/player/beats/${item.slug}` };
   if (item._type === 'release' && item.slug) return { href: `/releases/${item.slug}` };
+  if (item._type === 'lane' && item.slug) return { href: `/lanes/${item.slug}` };
   if (item._type === 'link' && item.url) return { href: item.url, external: true };
   if (item._type === 'playlist' && item.spotifyUrl) return { href: item.spotifyUrl, external: true };
   if (item._type === 'quote' && item.sourceUrl) return { href: item.sourceUrl, external: true };
@@ -73,5 +74,5 @@ function resultDestination(item: RawSearchResult): { href: string; external?: bo
 }
 
 function typeLabel(type: string) {
-  return ({ beat: 'Beat', release: 'Release', link: 'Link', playlist: 'Playlist', quote: 'Quote', fixation: 'Fixation' } as Record<string, string>)[type] || type;
+  return ({ beat: 'Beat', release: 'Release', lane: 'Lane', link: 'Link', playlist: 'Playlist', quote: 'Quote', fixation: 'Fixation' } as Record<string, string>)[type] || type;
 }

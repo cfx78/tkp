@@ -31,6 +31,7 @@ const playerBeatProjection = groq`{
   status,
   "coverArtUrl": coverArt.asset->url,
   lane->{
+    _id,
     name,
     "slug": slug.current,
     "fallbackCoverArtUrl": fallbackCoverArt.asset->url
@@ -82,7 +83,7 @@ export const featuredFixationsQuery = groq`*[_type == "homepageSettings"][0].fea
 
 export const lanesQuery = groq`*[_type == "lane"] | order(sortOrder asc, name asc){
   _id, name, "slug": slug.current, plainDescription, primaryColor, secondaryColor,
-  fallbackCoverArt${imageProjection}
+  fallbackCoverArt${imageProjection}, "coverArtUrl": fallbackCoverArt.asset->url
 }`;
 
 export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
@@ -102,6 +103,63 @@ export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(
       "fallbackCoverArtUrl": fallbackCoverArt.asset->url
     }
   }
+}`;
+
+export const laneDetailQuery = groq`*[
+  _type == "lane" &&
+  slug.current == $slug &&
+  defined(slug.current) &&
+  !(_id in path("drafts.**"))
+][0]{
+  _id,
+  name,
+  "slug": slug.current,
+  plainDescription,
+  primaryColor,
+  secondaryColor,
+  fallbackCoverArt,
+  "fallbackArtworkAspectRatio": fallbackCoverArt.asset->metadata.dimensions.aspectRatio,
+  "tags": coalesce(tags[]->{_id, name, "slug": slug.current, group}, []),
+  "beats": *[
+    _type == "beat" &&
+    lane._ref == ^._id
+  ] | order(coalesce(publishedAt, _createdAt) desc){
+    _id,
+    title,
+    "slug": slug.current,
+    status,
+    publishedAt,
+    "audioAvailable": defined(audioObjectKey),
+    "coverArtUrl": coverArt.asset->url,
+    lane->{
+      _id,
+      name,
+      "slug": slug.current,
+      "fallbackCoverArtUrl": fallbackCoverArt.asset->url
+    }
+  },
+  "releases": *[
+    _type == "release" &&
+    lane._ref == ^._id &&
+    defined(slug.current) &&
+    nsfw != true &&
+    !(_id in path("drafts.**"))
+  ] | order(coalesce(publishedAt, _createdAt) desc){
+    _id,
+    title,
+    "slug": slug.current,
+    releaseType,
+    publishedAt,
+    "coverArtUrl": coverArt.asset->url
+  },
+  "playlists": coalesce(relatedPlaylists[]->[nsfw != true && !(_id in path("drafts.**"))]{
+    _id,
+    title,
+    spotifyUrl,
+    appleMusicUrl,
+    youtubeMusicUrl,
+    shortNote
+  }, [])
 }`;
 
 export const releaseDetailQuery = groq`*[
@@ -150,17 +208,19 @@ export const tagsQuery = groq`*[_type == "tag"] | order(group asc, name asc){
 }`;
 
 export const searchResultsQuery = groq`*[
-  _type in ["beat", "release", "link", "playlist", "quote", "fixation"] &&
+  _type in ["beat", "release", "lane", "link", "playlist", "quote", "fixation"] &&
   nsfw != true &&
   (_type != "beat" || status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"])
 ] | order(coalesce(publishedAt, _createdAt) desc){
   _id,
   _type,
   title,
+  name,
   quoteText,
   person,
   status,
   releaseType,
+  plainDescription,
   shortDescription,
   shortNote,
   note,
