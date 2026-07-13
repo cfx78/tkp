@@ -193,9 +193,47 @@ export const releaseDetailQuery = groq`*[
   }, [])
 }`;
 
-export const logsQuery = groq`*[_type == "log" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
-  _id, title, body, bullets, logType, publishedAt,
-  tags[]->{_id, name, "slug": slug.current, group}
+export const logsFeedQuery = groq`*[
+  _type in ["log", "link", "playlist", "quote"] &&
+  nsfw != true &&
+  !(_id in path("drafts.**"))
+] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...120]{
+  _id,
+  _type,
+  "publishedAt": coalesce(publishedAt, _createdAt),
+  "tags": coalesce(tags[]->{_id, name, "slug": slug.current, group}, []),
+  _type == "log" => {
+    title,
+    body,
+    bullets,
+    logType,
+    "relatedBeats": coalesce(relatedBeats[]->[nsfw != true && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"] && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, []),
+    "relatedReleases": coalesce(relatedReleases[]->[nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, [])
+  },
+  _type == "link" => {
+    title,
+    url,
+    note,
+    platformAuto,
+    platformOverride,
+    "thumbnailUrl": thumbnail.asset->url,
+    "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio
+  },
+  _type == "playlist" => {
+    title,
+    spotifyUrl,
+    spotifyEmbedUrl,
+    appleMusicUrl,
+    youtubeMusicUrl,
+    shortNote
+  },
+  _type == "quote" => {
+    quoteText,
+    person,
+    sourceTitle,
+    sourceUrl,
+    foundViaLink->[nsfw != true && !(_id in path("drafts.**"))]{title, url}
+  }
 }`;
 
 export const fixationsQuery = groq`*[_type == "fixation" && nsfw != true] | order(isCore desc, status asc, title asc){
