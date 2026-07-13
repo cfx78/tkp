@@ -104,6 +104,37 @@ export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(
   }
 }`;
 
+export const releaseDetailQuery = groq`*[
+  _type == "release" &&
+  slug.current == $slug &&
+  defined(slug.current) &&
+  nsfw != true &&
+  !(_id in path("drafts.**"))
+][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  coverArt,
+  releaseType,
+  shortDescription,
+  publishedAt,
+  lane->{_id, name, "slug": slug.current, primaryColor, secondaryColor},
+  "tags": coalesce(tags[]->{_id, name, "slug": slug.current, group}, []),
+  "beats": coalesce(beats[]->{
+    _id,
+    title,
+    "slug": slug.current,
+    status,
+    "audioAvailable": defined(audioObjectKey),
+    "coverArtUrl": coverArt.asset->url,
+    lane->{
+      name,
+      "slug": slug.current,
+      "fallbackCoverArtUrl": fallbackCoverArt.asset->url
+    }
+  }, [])
+}`;
+
 export const logsQuery = groq`*[_type == "log" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
   _id, title, body, bullets, logType, publishedAt,
   tags[]->{_id, name, "slug": slug.current, group}
@@ -119,7 +150,7 @@ export const tagsQuery = groq`*[_type == "tag"] | order(group asc, name asc){
 }`;
 
 export const searchResultsQuery = groq`*[
-  _type in ["beat", "link", "playlist", "quote", "fixation"] &&
+  _type in ["beat", "release", "link", "playlist", "quote", "fixation"] &&
   nsfw != true &&
   (_type != "beat" || status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"])
 ] | order(coalesce(publishedAt, _createdAt) desc){
@@ -129,6 +160,7 @@ export const searchResultsQuery = groq`*[
   quoteText,
   person,
   status,
+  releaseType,
   shortDescription,
   shortNote,
   note,

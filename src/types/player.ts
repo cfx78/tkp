@@ -33,6 +33,7 @@ export type PlaybackContext = {
 export type PlayerRelease = {
   _id: string;
   title: string;
+  slug?: string;
   releaseType?: string;
   coverArtUrl?: string;
   beats: PlayerBeat[];
