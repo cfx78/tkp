@@ -117,3 +117,34 @@ export const fixationsQuery = groq`*[_type == "fixation" && nsfw != true] | orde
 export const tagsQuery = groq`*[_type == "tag"] | order(group asc, name asc){
   _id, name, "slug": slug.current, group, styleOverride
 }`;
+
+export const searchResultsQuery = groq`*[
+  _type in ["beat", "link", "playlist", "quote", "fixation"] &&
+  nsfw != true &&
+  (_type != "beat" || status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"])
+] | order(coalesce(publishedAt, _createdAt) desc){
+  _id,
+  _type,
+  title,
+  quoteText,
+  person,
+  status,
+  shortDescription,
+  shortNote,
+  note,
+  platformAuto,
+  platformOverride,
+  url,
+  spotifyUrl,
+  sourceUrl,
+  publishedAt,
+  _createdAt,
+  "slug": slug.current,
+  "imageUrl": coalesce(coverArt.asset->url, coverImage.asset->url, thumbnail.asset->url, fallbackCoverArt.asset->url),
+  "tagIds": coalesce(tags[]._ref, []),
+  "laneId": lane._ref,
+  "relatedLaneIds": relatedLanes[]._ref,
+  "fixationIds": relatedFixations[]._ref,
+  "releaseIds": releaseRefs[]._ref,
+  "containingReleaseIds": *[_type == "release" && references(^._id)]._id
+}`;
