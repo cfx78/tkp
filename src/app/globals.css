@@ -1,0 +1,271 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+
+  /* Stable Midnight City-Pop foundation. */
+  --bg-0: #05070b;
+  --bg-1: #090d16;
+  --bg-2: #101725;
+  --text-primary: #f4f6f8;
+  --text-secondary: #a3acba;
+  --text-muted: #6f7888;
+  --line-subtle: rgba(255, 255, 255, 0.12);
+
+  /* Available accent families. One accent is active at a time. */
+  --accent-cyan: #63cfe0;
+  --accent-blue: #5c8df6;
+  --accent-magenta: #b95791;
+  --accent-coral: #d26f62;
+  --accent-gold: #d3b069;
+  --accent-violet: #8467c6;
+  --accent-orange: #d9874b;
+  --accent-silver: #b7c0cc;
+
+  /* Neutral signature accent and semantic material roles. */
+  --accent: var(--accent-blue);
+  --accent-rgb: 92 141 246;
+  --accent-contrast: #05070b;
+  --surface-raised: rgba(16, 23, 37, 0.78);
+  --surface-overlay: rgba(5, 7, 11, 0.92);
+  --surface-active: rgba(92, 141, 246, 0.12);
+  --focus-ring: rgba(99, 207, 224, 0.92);
+  --danger: #e58a87;
+  --warning: var(--accent-orange);
+  --artwork-halo: rgba(92, 141, 246, 0.2);
+
+  /* Typography roles use local/system fonts in Phase 0. */
+  --font-ui: "Avenir Next", Avenir, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-meta: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --font-japanese: "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+  --text-display-size: clamp(2rem, 7vw, 4.5rem);
+  --text-section-size: clamp(1.25rem, 3vw, 1.75rem);
+  --text-body-size: 1rem;
+  --text-small-size: 0.875rem;
+  --text-meta-size: 0.6875rem;
+  --leading-reading: 1.75;
+
+  /* Layout roles. */
+  --page-inset-mobile: 1rem;
+  --page-inset-desktop: 2rem;
+  --shell-max: 72rem;
+  --reading-measure: 42rem;
+  --player-measure: 48rem;
+  --section-rhythm: clamp(2rem, 7vw, 4.5rem);
+  --compact-row-gap: 0.75rem;
+  --bottom-nav-height: 4.75rem;
+  --mini-player-offset: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  --safe-area-bottom: env(safe-area-inset-bottom);
+  --touch-target: 2.75rem;
+  --artwork-compact: 3rem;
+  --artwork-row: 4rem;
+  --artwork-feature: min(82vw, 28rem);
+
+  /* Shape, light, and layer roles. */
+  --radius-subtle: 0.5rem;
+  --radius-interactive: 0.75rem;
+  --radius-artwork: 0.875rem;
+  --divider-hairline: 1px solid var(--line-subtle);
+  --active-edge: 0 0 0 1px rgba(var(--accent-rgb) / 0.62);
+  --focus-glow: 0 0 0 3px rgba(99, 207, 224, 0.22);
+  --artwork-bloom: 0 24px 70px var(--artwork-halo);
+  --overlay-scrim: rgba(3, 5, 9, 0.76);
+  --sheet-elevation: 0 -24px 64px rgba(0, 0, 0, 0.56);
+
+  /* Motion roles; decorative motion is intentionally absent. */
+  --motion-instant: 0ms;
+  --motion-ui: 140ms;
+  --motion-crossfade: 260ms;
+  --motion-sheet: 220ms;
+  --motion-listening: 520ms;
+  --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+}
+
+html {
+  min-height: 100%;
+  background: var(--bg-0);
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  background-color: var(--bg-0);
+  background-image:
+    linear-gradient(180deg, rgba(16, 23, 37, 0.46) 0%, rgba(9, 13, 22, 0.18) 38%, rgba(5, 7, 11, 0) 70%),
+    radial-gradient(ellipse 90% 58% at 72% -12%, rgba(36, 51, 78, 0.34), transparent 68%),
+    linear-gradient(115deg, rgba(5, 7, 11, 0.18), rgba(9, 13, 22, 0.5));
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  min-height: var(--touch-target);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  box-shadow: var(--focus-glow);
+}
+
+input[type="range"]:focus-visible {
+  border-radius: 999px;
+  outline-width: 3px;
+  outline-offset: 5px;
+}
+
+[aria-current="page"] {
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.32em;
+}
+
+:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: rgba(var(--accent-rgb) / 0.34);
+  color: var(--text-primary);
+}
+
+@layer components {
+  .type-display {
+    color: var(--text-primary);
+    font-size: var(--text-display-size);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+  }
+
+  .type-section-heading {
+    color: var(--text-primary);
+    font-size: var(--text-section-size);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .type-body { color: var(--text-secondary); font-size: var(--text-body-size); line-height: 1.65; }
+  .type-small { color: var(--text-secondary); font-size: var(--text-small-size); line-height: 1.55; }
+  .type-reading { color: var(--text-secondary); font-size: var(--text-body-size); line-height: var(--leading-reading); max-width: var(--reading-measure); }
+  .type-metadata,
+  .type-numeric { color: var(--text-muted); font-family: var(--font-meta); font-size: var(--text-meta-size); font-variant-numeric: tabular-nums; }
+  .type-protocol-label { color: var(--accent); font-family: var(--font-meta); font-size: var(--text-meta-size); letter-spacing: 0.2em; line-height: 1.4; text-transform: uppercase; }
+  .type-navigation { font-family: var(--font-meta); font-size: 0.625rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .hairline-divider { width: 100%; border: 0; border-top: var(--divider-hairline); }
+  .active-edge { box-shadow: var(--active-edge); }
+  .focusable-surface { border-radius: var(--radius-interactive); transition: color var(--motion-ui) var(--ease-ui), background-color var(--motion-ui) var(--ease-ui), box-shadow var(--motion-ui) var(--ease-ui); }
+  .media-artwork { overflow: hidden; border-radius: var(--radius-artwork); background: var(--bg-2); box-shadow: var(--artwork-bloom); }
+}
+
+@media (min-width: 1024px) {
+  :root { --page-inset-mobile: var(--page-inset-desktop); }
+}
+
+@media (max-width: 640px) {
+  body { background-attachment: scroll; }
+}
+
+.listening-mode {
+  animation: listening-mode-enter var(--motion-listening) var(--ease-ui) both;
+  isolation: isolate;
+  overscroll-behavior: contain;
+}
+
+.listening-mode__ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background:
+    radial-gradient(ellipse 70% 52% at 48% 38%, rgba(var(--listening-accent-rgb) / 0.1), transparent 68%),
+    radial-gradient(ellipse 38% 46% at 78% 76%, color-mix(in srgb, var(--listening-secondary) 7%, transparent), transparent 72%),
+    linear-gradient(160deg, #020307 12%, #050812 58%, #020307 100%);
+  transition: opacity var(--motion-crossfade) var(--ease-ui);
+}
+
+.listening-mode__halo {
+  border-radius: 35%;
+  background: radial-gradient(circle, rgba(var(--listening-accent-rgb) / 0.34), rgba(var(--listening-accent-rgb) / 0.08) 42%, transparent 72%);
+  filter: blur(30px);
+  opacity: 0.62;
+  transform: scale(0.94);
+  transition: opacity var(--motion-crossfade) var(--ease-ui), transform var(--motion-crossfade) var(--ease-ui);
+}
+
+.listening-mode__art-echo {
+  border-radius: var(--radius-artwork);
+  filter: blur(34px) saturate(0.8);
+  opacity: 0.14;
+  transform: translate(14%, 11%) scale(1.04);
+}
+
+.listening-mode.is-playing .listening-mode__halo { animation: listening-halo 14s ease-in-out infinite alternate; opacity: 0.82; }
+.listening-mode.is-playing .listening-mode__art-echo { animation: listening-echo 18s ease-in-out infinite alternate; }
+.listening-mode.is-quiet .listening-mode__ambient { opacity: 0.78; }
+
+@keyframes listening-mode-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes listening-halo { from { transform: translate3d(-1.5%, 0, 0) scale(0.95); } to { transform: translate3d(1.5%, -1%, 0) scale(1.02); } }
+@keyframes listening-echo { from { transform: translate(13%, 11%) scale(1.03); opacity: 0.12; } to { transform: translate(15%, 9%) scale(1.07); opacity: 0.18; } }
+
+@media (max-height: 620px) and (min-width: 560px) {
+  .listening-mode__composition { align-content: start; grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr); gap: 1.5rem; }
+  .listening-mode__art-stage { max-width: min(42vh, 18rem); }
+}
+
+/* The document owns public-page scrolling. Hide only its visible scrollbar
+   when the public shell is mounted; Studio and nested scrollers are untouched. */
+html:has(.public-app-shell) {
+  scrollbar-width: none;
+}
+
+html:has(.public-app-shell)::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-ui: 0ms;
+    --motion-crossfade: 0ms;
+    --motion-sheet: 0ms;
+    --motion-listening: 0ms;
+  }
+
+  html:focus-within { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .listening-mode__art-echo { display: none; }
+  .listening-mode__halo { opacity: 0.58; transform: none; }
+}

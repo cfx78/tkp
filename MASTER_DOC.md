@@ -14,6 +14,32 @@ The goal is to build a lightweight, mobile-first personal PWA that acts as:
 
 The project should stay focused. Do not overbuild. Do not add social features, user accounts, comments, likes, recommendation engines, or extra schemas unless explicitly requested later.
 
+
+---
+
+## Visual Direction Authority
+
+The final visual and interaction direction is defined in
+`UI_AESTHETIC_BRIEF.md`.
+
+That document supersedes any conflicting visual-language descriptions in
+this master document, including broader references to cyberpunk, vice,
+retro-futurism, or card-based dashboard styling.
+
+This document remains authoritative for:
+
+- product architecture
+- routes and navigation
+- schemas and content relationships
+- feature scope
+- storage and security
+- implementation phases
+
+The aesthetic brief may change presentation, composition, typography,
+color, motion, and artwork behavior. It must not silently change product
+functionality or information architecture.
+
+
 ---
 
 # 1. Core Identity
@@ -194,9 +220,10 @@ Sanity is the source of truth for:
 
 Cloudflare R2 stores:
 
-* main beat audio files
-* beat version/context audio files
-* larger audio files if needed later
+* listening-copy MP3 files for main beats
+* listening-copy MP3 files for beat versions/context files
+
+Do not store or serve masters, stems, project files, or other production source files through the PWA.
 
 Recommended R2 bucket:
 
@@ -208,18 +235,24 @@ kitsune-audio
 
 Sanity should not store the beat audio files themselves.
 
-Sanity should store R2 audio URLs.
+The R2 bucket must remain private.
+
+Sanity should store R2 object keys, not public audio URLs or credentials.
 
 Example:
 
 ```ts
 beat {
   title
-  audioUrl // Cloudflare R2 URL
+  audioObjectKey // Example: beats/test-beat.mp3
 }
 ```
 
-For MVP, audio can be uploaded manually to R2 and the URL pasted into Sanity. Do not build an audio upload manager in MVP.
+Beat versions/context files should also store `audioObjectKey`.
+
+For playback, the application will later generate temporary signed GET URLs on the server. R2 credentials must remain server-side only and must never use `NEXT_PUBLIC_` environment variables. Do not enable public bucket access.
+
+For MVP, listening-copy MP3 files can be uploaded manually to private R2 and the object key pasted into Sanity. Do not build an audio upload manager in MVP.
 
 ---
 
@@ -487,7 +520,7 @@ A Beat can be final, approved demo, rough, sketch, context-only, etc.
 
 ```ts
 title: string
-audioUrl: string
+audioObjectKey: string
 lane: reference to lane
 ```
 
@@ -581,7 +614,7 @@ Example:
 versions: [
   {
     title: string
-    audioUrl: string
+    audioObjectKey: string
     note?: string
     versionType?: string
     createdAt?: datetime
@@ -1682,7 +1715,7 @@ Build:
 * releases
 * lanes
 * Beat File page
-* R2 audio URL playback
+* temporary server-generated signed R2 playback URLs
 
 ## Phase 4 — Home
 

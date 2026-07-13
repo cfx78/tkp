@@ -109,7 +109,11 @@ Sanity stores content metadata, images, schemas, and references.
 
 Cloudflare R2 stores beat audio files.
 
-Sanity beat documents should store R2 audio URLs.
+The Cloudflare R2 bucket remains private. Store listening-copy MP3 files only, not masters, stems, or project files.
+
+Sanity beat documents and beat version/context entries should store an `audioObjectKey`, such as `beats/test-beat.mp3`, not a public audio URL.
+
+Playback will use temporary signed GET URLs generated server-side. Keep all R2 credentials server-side, never expose them through `NEXT_PUBLIC_` variables, and do not enable public bucket access. Do not store R2 credentials in Sanity.
 
 ---
 
@@ -201,7 +205,7 @@ Main Library includes:
 Required beat fields:
 
 * title
-* audioUrl
+* audioObjectKey
 * lane
 
 Beat cover art is optional.
@@ -678,3 +682,42 @@ Search = the archive
 ```
 
 Do not reintroduce old complexity.
+
+
+## Design Source-of-Truth Hierarchy
+
+When working on interface or visual presentation, use this priority order:
+
+1. `MASTER_DOC.md`
+   - Product behavior
+   - Existing information architecture
+   - Routes
+   - Content models
+   - Security
+   - Feature scope
+
+2. `UI_AESTHETIC_BRIEF.md`
+   - Visual identity
+   - Composition
+   - Color
+   - Typography
+   - Motion
+   - Artwork presentation
+   - Interface voice
+   - Responsive presentation
+
+3. `docs/references/midnight-city-pop-moodboard.png`
+   - Mood reference only
+   - Do not reproduce its exact layout, characters, navigation, Japanese
+     labels, card structure, or dashboard density
+
+When documents conflict:
+
+- Preserve existing functionality and information architecture.
+- Follow `UI_AESTHETIC_BRIEF.md` for visual presentation.
+- Treat the reference image as non-authoritative.
+- Ask before adding, removing, or renaming primary navigation items.
+- Do not perform a full rewrite.
+- Audit existing components before replacing them.
+- Implement visual changes incrementally and verify existing playback,
+  Sanity, R2, history, routing, and mobile behavior after every phase.
