@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { ProtocolLabel } from '@/src/components/presentation-primitives';
-import { normalizeRabbitHole, type RawRabbitHoleData } from '@/src/lib/rabbit-hole';
+import { RabbitHoleBrowser, type RabbitHoleBrowserItem } from '@/src/components/rabbit-hole-browser';
+import { normalizeRabbitHole, type RabbitHoleItem, type RawRabbitHoleData } from '@/src/lib/rabbit-hole';
 import { fetchSanity } from '@/src/sanity/lib/content';
 import { urlFor } from '@/src/sanity/lib/image';
 import { rabbitHoleQuery } from '@/src/sanity/lib/queries';
@@ -35,30 +36,24 @@ export default async function RabbitHolePage({ params }: Props) {
   const rabbitHole = await getRabbitHole(slug);
   if (!rabbitHole) notFound();
 
-  return <main className="mx-auto w-full max-w-3xl pb-8">
-    <Link href={`/fixations/${rabbitHole.slug}`} className="focusable-surface inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
-      <ArrowLeft className="h-4 w-4" /> Back to {rabbitHole.title}
-    </Link>
-    <header className="mt-8 border-y border-[var(--line-subtle)] py-10 sm:py-14">
-      <ProtocolLabel>Rabbit Hole / Architecture</ProtocolLabel>
+  const pinnedItems = rabbitHole.pinnedItems.map(toBrowserItem);
+  const feedItems = rabbitHole.feedItems.map(toBrowserItem);
+
+  return <main className="mx-auto w-full max-w-5xl overflow-x-clip pb-8">
+    <header className="border-y border-[var(--line-subtle)] py-9 sm:py-12">
+      <ProtocolLabel>Rabbit Hole</ProtocolLabel>
       <h1 className="mt-4 break-words text-[clamp(2.5rem,10vw,5rem)] font-semibold leading-[0.95] tracking-[-0.045em] text-[var(--text-primary)]">{rabbitHole.title} Rabbit Hole</h1>
       {rabbitHole.shortDescription ? <p className="type-reading mt-6 max-w-[var(--reading-measure)]">{rabbitHole.shortDescription}</p> : null}
     </header>
-    <section className="mt-10" aria-labelledby="rabbit-hole-status">
-      <h2 id="rabbit-hole-status" className="type-protocol-label text-[var(--text-muted)]">Architecture checkpoint</h2>
-      <dl className="type-metadata mt-4 grid grid-cols-[minmax(0,1fr)_auto] gap-x-6 gap-y-3 border-y border-[var(--line-subtle)] py-5">
-        <dt>Pinned items</dt><dd>{rabbitHole.pinnedItems.length}</dd>
-        <dt>Remaining feed items</dt><dd>{rabbitHole.feedItems.length}</dd>
-      </dl>
-      <div className="mt-7">
-        <h2 className="type-protocol-label text-[var(--text-muted)]">Normalized categories</h2>
-        <ul className="mt-3 flex flex-wrap gap-2" aria-label="Rabbit Hole categories">
-          {rabbitHole.categories.map((category) => <li key={category.value} className="type-metadata border border-white/10 px-2 py-1 text-[var(--text-secondary)]">{category.label}</li>)}
-        </ul>
-      </div>
-      <p className="type-small mt-8 max-w-xl border-l border-[var(--line-subtle)] pl-4">The server-side archive is ready. Media presentation and progressive controls arrive in the next Rabbit Hole checkpoint.</p>
-    </section>
+    <Link href={`/fixations/${rabbitHole.slug}`} className="focusable-surface mt-5 inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><ArrowLeft className="h-4 w-4" /> Back to {rabbitHole.title}</Link>
+    <RabbitHoleBrowser categories={rabbitHole.categories} pinnedItems={pinnedItems} feedItems={feedItems} />
   </main>;
+}
+
+function toBrowserItem(item: RabbitHoleItem): RabbitHoleBrowserItem {
+  const { thumbnail, ...safeItem } = item;
+  const thumbnailUrl = thumbnail ? urlFor(thumbnail).width(1200).fit('max').auto('format').url() : undefined;
+  return { ...safeItem, thumbnailUrl };
 }
 
 function isValidSlug(slug: string) {

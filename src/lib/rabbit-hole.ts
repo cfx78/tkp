@@ -1,5 +1,6 @@
 import type { SanityImageSource } from '@sanity/image-url';
 import { getSpotifyPlaylistEmbedUrl } from './spotify';
+import { getYouTubeEmbedUrl } from './youtube';
 
 type RawCategory = {
   _id?: string;
@@ -53,6 +54,7 @@ export type RabbitHoleItem = {
   thumbnail?: SanityImageSource;
   thumbnailAspectRatio?: number;
   trustedEmbedUrl?: string;
+  trustedEmbedProvider?: 'YouTube' | 'Spotify';
   pinnedSource?: 'fixation' | 'link';
   pinnedOrder?: number;
 };
@@ -117,7 +119,9 @@ function normalizeItem(raw: RawRabbitHoleLink): RabbitHoleItem | null {
   const url = safeExternalUrl(raw?.url);
   if (!raw || !id || !url) return null;
 
-  const trustedEmbedUrl = getSpotifyPlaylistEmbedUrl(url, raw.embedUrl);
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(url, raw.embedUrl);
+  const spotifyEmbedUrl = getSpotifyPlaylistEmbedUrl(url, raw.embedUrl);
+  const trustedEmbedUrl = youtubeEmbedUrl || spotifyEmbedUrl || undefined;
   return {
     id,
     title: cleanText(raw.title),
@@ -128,7 +132,8 @@ function normalizeItem(raw: RawRabbitHoleLink): RabbitHoleItem | null {
     publishedAt: normalizeDate(raw.effectivePublishedAt),
     thumbnail: raw.thumbnail,
     thumbnailAspectRatio: validAspectRatio(raw.thumbnailAspectRatio),
-    trustedEmbedUrl: trustedEmbedUrl || undefined,
+    trustedEmbedUrl,
+    trustedEmbedProvider: youtubeEmbedUrl ? 'YouTube' : spotifyEmbedUrl ? 'Spotify' : undefined,
   };
 }
 
