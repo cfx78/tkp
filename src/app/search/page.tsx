@@ -69,7 +69,7 @@ function resultDestination(item: RawSearchResult): { href: string; external?: bo
   if (item._type === 'link' && item.url) return { href: item.url, external: true };
   if (item._type === 'playlist' && item.spotifyUrl) return { href: item.spotifyUrl, external: true };
   if (item._type === 'quote' && item.sourceUrl) return { href: item.sourceUrl, external: true };
-  if (item._type === 'fixation') return { href: '/fixations' };
+  if (item._type === 'fixation' && item.slug) return { href: `/fixations/${item.slug}` };
   return null;
 }
 

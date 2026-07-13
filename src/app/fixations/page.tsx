@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { fetchSanity, type FixationSummary } from '@/src/sanity/lib/content';
 import { fixationsQuery } from '@/src/sanity/lib/queries';
 
@@ -11,8 +12,9 @@ export default async function FixationsPage() {
         <p className="mt-3 text-sm leading-7 text-mist/70">Core, active, sleeping, and archived rabbit-hole containers.</p>
       </section>
       <section className="grid gap-4 sm:grid-cols-2">
-        {fixations.length ? fixations.map((fixation) => (
-          <article key={fixation._id} className="rounded-[1.5rem] border border-white/10 bg-[#0a0d14]/80 p-5">
+        {fixations.length ? fixations.map((fixation) => fixation.slug ? (
+          <Link key={fixation._id} href={`/fixations/${fixation.slug}`} className="focusable-surface block rounded-[1.5rem]" aria-label={`Open ${fixation.title} Fixation`}>
+          <article className="rounded-[1.5rem] border border-white/10 bg-[#0a0d14]/80 p-5 transition-colors duration-[var(--motion-ui)] hover:border-white/25">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-mist/50">
               {fixation.isCore && <span className="text-ember">Core</span>}
               <span>{fixation.status || 'active'}</span>
@@ -20,7 +22,8 @@ export default async function FixationsPage() {
             <h2 className="mt-3 text-xl font-semibold text-white">{fixation.title}</h2>
             <p className="mt-2 text-sm leading-6 text-mist/70">{fixation.shortDescription || 'Description coming soon.'}</p>
           </article>
-        )) : <p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-mist/60">No fixations have been published yet.</p>}
+          </Link>
+        ) : null) : <p className="rounded-2xl border border-dashed border-white/10 p-5 text-sm text-mist/60">No fixations have been published yet.</p>}
       </section>
     </main>
   );

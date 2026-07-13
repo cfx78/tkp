@@ -41,7 +41,7 @@ const resultFilterKeys: Record<SearchFilterGroup['label'], keyof Pick<SearchResu
 export function SearchBrowser({ groups, results }: { groups: SearchFilterGroup[]; results: SearchResult[] }) {
   const [selection, setSelection] = useState<Selection>(null);
   const filteredResults = selection
-    ? results.filter((result) => result[resultFilterKeys[selection.group]].includes(selection.id))
+    ? results.filter((result) => result[resultFilterKeys[selection.group]].includes(selection.id) && (selection.group !== 'Fixations' || result.type !== 'Fixation'))
     : results;
 
   return <>

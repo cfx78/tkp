@@ -14,7 +14,7 @@ export const homepageSettingsQuery = groq`*[_type == "homepageSettings"][0]{
     release->{_id, title, "slug": slug.current, coverArt${imageProjection}}
   },
   featuredFixations[]->{
-    _id, title, "slug": slug.current, shortDescription, status, isCore, coverImage${imageProjection}
+    _id, title, "slug": slug.current, shortDescription, status, isCore, nsfw, coverImage${imageProjection}
   }
 }`;
 
@@ -207,8 +207,9 @@ export const logsFeedQuery = groq`*[
     body,
     bullets,
     logType,
-    "relatedBeats": coalesce(relatedBeats[]->[nsfw != true && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"] && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, []),
-    "relatedReleases": coalesce(relatedReleases[]->[nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, [])
+    "relatedFixations": coalesce((relatedFixations[]->)[nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, []),
+    "relatedBeats": coalesce((relatedBeats[]->)[nsfw != true && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"] && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, []),
+    "relatedReleases": coalesce((relatedReleases[]->)[nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current}, [])
   },
   _type == "link" => {
     title,
@@ -236,7 +237,7 @@ export const logsFeedQuery = groq`*[
   }
 }`;
 
-export const fixationsQuery = groq`*[_type == "fixation" && nsfw != true] | order(isCore desc, status asc, title asc){
+export const fixationsQuery = groq`*[_type == "fixation" && nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))] | order(isCore desc, status asc, title asc){
   _id, title, "slug": slug.current, shortDescription, whyThisMatters, status, isCore,
   coverImage${imageProjection}
 }`;
@@ -248,6 +249,7 @@ export const tagsQuery = groq`*[_type == "tag"] | order(group asc, name asc){
 export const searchResultsQuery = groq`*[
   _type in ["beat", "release", "lane", "link", "playlist", "quote", "fixation"] &&
   nsfw != true &&
+  !(_id in path("drafts.**")) &&
   (_type != "beat" || status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"])
 ] | order(coalesce(publishedAt, _createdAt) desc){
   _id,
@@ -277,4 +279,70 @@ export const searchResultsQuery = groq`*[
   "fixationIds": relatedFixations[]._ref,
   "releaseIds": releaseRefs[]._ref,
   "containingReleaseIds": *[_type == "release" && references(^._id)]._id
+}`;
+
+export const fixationDetailQuery = groq`*[
+  _type == "fixation" &&
+  slug.current == $slug &&
+  defined(slug.current) &&
+  nsfw != true &&
+  !(_id in path("drafts.**"))
+][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  shortDescription,
+  whyThisMatters,
+  status,
+  isCore,
+  coverImage,
+  "coverAspectRatio": coverImage.asset->metadata.dimensions.aspectRatio,
+  "tags": coalesce(tags[]->{_id, name, "slug": slug.current, group}, []),
+  "pinnedLogs": coalesce((pinnedLogs[]->)[nsfw != true && !(_id in path("drafts.**"))]{
+    _id, "kind": "log", title, body, bullets, logType, "publishedAt": coalesce(publishedAt, _createdAt)
+  }, []),
+  "pinnedLinks": coalesce((pinnedLinks[]->)[nsfw != true && isRabbitHoleItem != true && !(_id in path("drafts.**"))]{
+    _id, "kind": "link", title, url, note, platformAuto, platformOverride,
+    "publishedAt": coalesce(publishedAt, _createdAt), thumbnail,
+    "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio
+  }, []),
+  "pinnedPlaylists": coalesce((pinnedPlaylists[]->)[nsfw != true && !(_id in path("drafts.**"))]{
+    _id, "kind": "playlist", title, shortNote, spotifyUrl, appleMusicUrl, youtubeMusicUrl,
+    "publishedAt": coalesce(publishedAt, _createdAt)
+  }, []),
+  "pinnedQuotes": coalesce((pinnedQuotes[]->)[nsfw != true && !(_id in path("drafts.**"))]{
+    _id, "kind": "quote", quoteText, person, sourceTitle, sourceUrl,
+    "publishedAt": coalesce(publishedAt, _createdAt)
+  }, []),
+  "relatedBeats": coalesce((relatedBeats[]->)[nsfw != true && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"] && defined(slug.current) && !(_id in path("drafts.**"))]{
+    _id, title, "slug": slug.current, status, "publishedAt": coalesce(publishedAt, _createdAt),
+    coverArt, lane->{name, fallbackCoverArt}
+  }, []),
+  "relatedReleases": coalesce((relatedReleases[]->)[nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))]{
+    _id, title, "slug": slug.current, releaseType, "publishedAt": coalesce(publishedAt, _createdAt), coverArt
+  }, []),
+  "recentLogs": *[_type == "log" && nsfw != true && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
+    _id, "kind": "log", title, body, bullets, logType, "publishedAt": coalesce(publishedAt, _createdAt)
+  },
+  "recentLinks": *[_type == "link" && nsfw != true && isRabbitHoleItem != true && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
+    _id, "kind": "link", title, url, note, platformAuto, platformOverride,
+    "publishedAt": coalesce(publishedAt, _createdAt), thumbnail,
+    "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio
+  },
+  "recentPlaylists": *[_type == "playlist" && nsfw != true && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
+    _id, "kind": "playlist", title, shortNote, spotifyUrl, appleMusicUrl, youtubeMusicUrl,
+    "publishedAt": coalesce(publishedAt, _createdAt)
+  },
+  "recentQuotes": *[_type == "quote" && nsfw != true && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
+    _id, "kind": "quote", quoteText, person, sourceTitle, sourceUrl,
+    "publishedAt": coalesce(publishedAt, _createdAt)
+  },
+  "recentBeats": *[_type == "beat" && nsfw != true && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"] && defined(slug.current) && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
+    _id, title, "slug": slug.current, status, "publishedAt": coalesce(publishedAt, _createdAt),
+    coverArt, lane->{name, fallbackCoverArt}
+  },
+  "recentReleases": *[_type == "release" && nsfw != true && defined(slug.current) && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
+    _id, title, "slug": slug.current, releaseType, "publishedAt": coalesce(publishedAt, _createdAt), coverArt
+  },
+  "hasRabbitHoleItems": count(*[_type == "link" && nsfw != true && isRabbitHoleItem == true && references(^._id) && !(_id in path("drafts.**"))]) > 0
 }`;

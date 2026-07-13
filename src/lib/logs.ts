@@ -1,7 +1,7 @@
 import type { LogType, LogsFeedItem, LogsTag, RelatedArchiveItem } from '@/src/types/logs';
 
 type RawTag = { _id?: string; name?: string; slug?: string; group?: string };
-type RawRelated = { _id?: string; title?: string; slug?: string };
+type RawRelated = { _id?: string; title?: string; slug?: string } | null;
 
 export type RawLogsFeedItem = {
   _id?: string;
@@ -12,6 +12,7 @@ export type RawLogsFeedItem = {
   body?: string;
   bullets?: string[];
   logType?: string;
+  relatedFixations?: RawRelated[];
   relatedBeats?: RawRelated[];
   relatedReleases?: RawRelated[];
   url?: string;
@@ -47,7 +48,7 @@ export function normalizeLogsFeed(items: RawLogsFeedItem[]): LogsFeedItem[] {
         body: cleanText(item.body),
         bullets: (item.bullets || []).map(cleanText).filter((value): value is string => Boolean(value)),
         logType: item.logType,
-        related: normalizeRelated(item.relatedBeats, item.relatedReleases),
+        related: normalizeRelated(item.relatedFixations, item.relatedBeats, item.relatedReleases),
       }];
     }
 
@@ -117,14 +118,17 @@ function normalizeTags(tags?: RawTag[]): LogsTag[] {
   });
 }
 
-function normalizeRelated(beats?: RawRelated[], releases?: RawRelated[]): RelatedArchiveItem[] {
-  const beatItems = (beats || []).flatMap((item) => item._id && item.title && item.slug
+function normalizeRelated(fixations?: RawRelated[], beats?: RawRelated[], releases?: RawRelated[]): RelatedArchiveItem[] {
+  const fixationItems = (fixations || []).flatMap((item) => item?._id && item.title && item.slug
+    ? [{ id: item._id, title: item.title, href: `/fixations/${item.slug}`, kind: 'Fixation' as const }]
+    : []);
+  const beatItems = (beats || []).flatMap((item) => item?._id && item.title && item.slug
     ? [{ id: item._id, title: item.title, href: `/player/beats/${item.slug}`, kind: 'Beat' as const }]
     : []);
-  const releaseItems = (releases || []).flatMap((item) => item._id && item.title && item.slug
+  const releaseItems = (releases || []).flatMap((item) => item?._id && item.title && item.slug
     ? [{ id: item._id, title: item.title, href: `/releases/${item.slug}`, kind: 'Release' as const }]
     : []);
-  return [...beatItems, ...releaseItems];
+  return [...fixationItems, ...beatItems, ...releaseItems];
 }
 
 function cleanText(value?: string): string | undefined {

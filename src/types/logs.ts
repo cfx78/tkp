@@ -17,7 +17,7 @@ export type RelatedArchiveItem = {
   id: string;
   title: string;
   href: string;
-  kind: 'Beat' | 'Release';
+  kind: 'Fixation' | 'Beat' | 'Release';
 };
 
 export type LogFeedItem = FeedBase & {
