@@ -97,6 +97,7 @@ export default async function FixationPage({ params }: Props) {
           <ProtocolLabel>{fixation.isCore ? 'Core Fixation' : statusLabel(fixation.status)}</ProtocolLabel>
           <h1 className="mt-4 max-w-[8ch] break-words text-[clamp(2.75rem,13vw,7rem)] font-semibold leading-[0.88] tracking-[-0.06em] text-[var(--text-primary)] sm:max-w-3xl">{fixation.title}</h1>
           {fixation.shortDescription ? <p className="mt-6 max-w-xl text-[1.05rem] leading-8 text-[var(--text-secondary)] sm:text-lg">{fixation.shortDescription}</p> : null}
+          {fixation.hasRabbitHoleItems ? <Link href={`/fixations/${fixation.slug}/rabbit-hole`} className="focusable-surface mt-7 inline-flex min-h-11 items-center border-b border-[var(--accent)] px-1 text-sm font-semibold text-[var(--text-primary)]">Enter Rabbit Hole <ArrowUpRight className="ml-2 h-4 w-4" /></Link> : null}
         </div>
         <div className="relative order-1 mx-auto w-full max-w-[42rem] sm:order-2 sm:mx-0">
           <div aria-hidden="true" className="absolute inset-[12%] -z-10 bg-[var(--artwork-halo)] opacity-50 blur-3xl" />

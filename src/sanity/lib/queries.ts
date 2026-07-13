@@ -344,5 +344,48 @@ export const fixationDetailQuery = groq`*[
   "recentReleases": *[_type == "release" && nsfw != true && defined(slug.current) && references(^._id) && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...8]{
     _id, title, "slug": slug.current, releaseType, "publishedAt": coalesce(publishedAt, _createdAt), coverArt
   },
-  "hasRabbitHoleItems": count(*[_type == "link" && nsfw != true && isRabbitHoleItem == true && references(^._id) && !(_id in path("drafts.**"))]) > 0
+  "hasRabbitHoleItems": count(*[_type == "link" && nsfw != true && isRabbitHoleItem == true && references(^._id) && (url match "http://*" || url match "https://*") && !(_id in path("drafts.**"))]) > 0
+}`;
+
+export const rabbitHoleQuery = groq`*[
+  _type == "fixation" &&
+  slug.current == $slug &&
+  defined(slug.current) &&
+  nsfw != true &&
+  !(_id in path("drafts.**"))
+][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  shortDescription,
+  coverImage,
+  "coverAspectRatio": coverImage.asset->metadata.dimensions.aspectRatio,
+  "pinnedLinkIds": coalesce(pinnedLinks[]._ref, []),
+  "directPinnedLinks": *[
+    _type == "link" &&
+    _id in ^.pinnedLinks[]._ref &&
+    isRabbitHoleItem == true &&
+    nsfw != true &&
+    references(^._id) &&
+    (url match "http://*" || url match "https://*") &&
+    !(_id in path("drafts.**"))
+  ]{
+    _id, title, url, note, thumbnail, embedUrl, platformAuto, platformOverride, isPinnedInRabbitHole,
+    "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio,
+    "category": rabbitHoleCategory->{_id, name, "slug": slug.current, group},
+    "effectivePublishedAt": coalesce(publishedAt, _createdAt)
+  },
+  "links": *[
+    _type == "link" &&
+    isRabbitHoleItem == true &&
+    nsfw != true &&
+    references(^._id) &&
+    (url match "http://*" || url match "https://*") &&
+    !(_id in path("drafts.**"))
+  ] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...100]{
+    _id, title, url, note, thumbnail, embedUrl, platformAuto, platformOverride, isPinnedInRabbitHole,
+    "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio,
+    "category": rabbitHoleCategory->{_id, name, "slug": slug.current, group},
+    "effectivePublishedAt": coalesce(publishedAt, _createdAt)
+  }
 }`;
