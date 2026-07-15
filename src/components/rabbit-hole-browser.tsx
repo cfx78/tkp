@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { ExternalLink, ImageIcon } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Check, ExternalLink, ImageIcon, Play, Plus } from 'lucide-react';
 import { SpotifyPlaylistEmbed } from './spotify-playlist-embed';
 import type { RabbitHoleCategory, RabbitHoleItem } from '@/src/lib/rabbit-hole';
 
@@ -41,12 +41,13 @@ export function RabbitHoleBrowser({ categories, pinnedItems, feedItems }: Rabbit
   };
 
   return <>
-    <fieldset className="mt-10 border-y border-[var(--line-subtle)] py-5">
+    <fieldset className="mt-10 min-w-0 border-y border-[var(--line-subtle)] py-5">
       <legend className="type-protocol-label px-2 text-[var(--text-muted)]">Browse categories</legend>
-      <div className="flex flex-wrap gap-2">
+      <div className="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
         <CategoryButton selected={selectedCategory === 'all'} onClick={() => selectCategory('all')}>All</CategoryButton>
         {categories.map((category) => <CategoryButton key={category.value} selected={selectedCategory === category.value} onClick={() => selectCategory(category.value)}>{category.label}</CategoryButton>)}
       </div>
+      <p className="type-metadata mt-3" aria-live="polite">{filteredFeed.length} feed {filteredFeed.length === 1 ? 'item' : 'items'}{filteredPinned.length ? ` / ${filteredPinned.length} pinned` : ''}</p>
     </fieldset>
 
     {filteredPinned.length ? <section className="mt-[var(--section-rhythm)]" aria-labelledby="rabbit-hole-pinned-title">
@@ -61,8 +62,8 @@ export function RabbitHoleBrowser({ categories, pinnedItems, feedItems }: Rabbit
       <div className="border-b border-[var(--line-subtle)] pb-4"><p className="type-protocol-label text-[var(--text-muted)]">Chronological trail</p><h2 id="rabbit-hole-feed-title" className="type-section-heading mt-2">More from the archive</h2></div>
       <ol>{visibleFeed.map((item, index) => <li key={item.id}><RabbitHoleEntry item={item} index={index} previewOpen={openPreviews.has(item.id)} onTogglePreview={() => togglePreview(item.id)} /></li>)}</ol>
       {remaining ? <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--line-subtle)] py-4">
-        <p className="type-metadata">{remaining} remaining</p>
-        <button type="button" onClick={() => setVisibleCount((count) => count + FEED_INCREMENT)} className="focusable-surface inline-flex min-h-11 items-center border border-[var(--line-subtle)] px-4 text-sm font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]">Load More</button>
+        <p className="type-metadata" aria-live="polite">{remaining} remaining</p>
+        <button type="button" onClick={() => setVisibleCount((count) => count + FEED_INCREMENT)} className="focusable-surface inline-flex min-h-11 items-center gap-2 border border-[var(--line-subtle)] px-4 text-sm font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]"><Plus aria-hidden="true" className="h-4 w-4" />Load More</button>
       </div> : null}
     </section> : null}
 
@@ -75,19 +76,27 @@ export function RabbitHoleBrowser({ categories, pinnedItems, feedItems }: Rabbit
 }
 
 function CategoryButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" aria-pressed={selected} onClick={onClick} className={`focusable-surface inline-flex min-h-11 items-center border px-3 text-sm font-semibold ${selected ? 'border-[var(--accent)] bg-[var(--surface-active)] text-[var(--text-primary)]' : 'border-white/10 text-[var(--text-secondary)] hover:border-white/25 hover:text-[var(--text-primary)]'}`}><span aria-hidden="true" className="mr-2 type-numeric">{selected ? '●' : '○'}</span>{children}</button>;
+  return <button type="button" aria-pressed={selected} onClick={onClick} className={`focusable-surface inline-flex min-h-11 shrink-0 items-center gap-2 border px-3 text-sm font-semibold ${selected ? 'border-[var(--accent)] bg-[var(--surface-active)] text-[var(--text-primary)]' : 'border-white/10 text-[var(--text-secondary)] hover:border-white/25 hover:text-[var(--text-primary)]'}`}><span aria-hidden="true" className="grid h-4 w-4 place-items-center border border-current">{selected ? <Check className="h-3 w-3" strokeWidth={2.5} /> : null}</span>{children}</button>;
 }
 
 function RabbitHoleEntry({ item, featured, index, previewOpen, onTogglePreview }: { item: RabbitHoleBrowserItem; featured?: boolean; index: number; previewOpen: boolean; onTogglePreview: () => void }) {
-  return <article className={`grid min-w-0 gap-6 border-b border-[var(--line-subtle)] py-8 sm:py-12 ${featured ? 'lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,.8fr)] lg:items-center' : `md:grid-cols-[8rem_minmax(0,1fr)] md:gap-10 ${index % 3 === 1 ? 'md:pl-[6%]' : ''}`}`}>
-    {featured ? <MediaPresentation item={item} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /> : <EntryMetadata item={item} />}
+  const previewId = useId();
+  const previewActionRef = useRef<HTMLButtonElement>(null);
+  const wasPreviewOpen = useRef(previewOpen);
+  useEffect(() => {
+    if (previewOpen && !wasPreviewOpen.current && !document.activeElement?.closest('[data-preview-action]')) previewActionRef.current?.focus();
+    wasPreviewOpen.current = previewOpen;
+  }, [previewOpen]);
+
+  return <article className={`grid min-w-0 gap-6 border-b border-[var(--line-subtle)] py-8 sm:py-12 ${featured ? 'border-l border-l-[var(--accent)] pl-4 sm:pl-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,.8fr)] lg:items-center' : `md:grid-cols-[8rem_minmax(0,1fr)] md:gap-10 ${index % 3 === 1 ? 'md:pl-[6%]' : ''}`}`}>
+    {featured ? <MediaPresentation item={item} previewId={previewId} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /> : <EntryMetadata item={item} />}
     <div className="min-w-0">
       {featured ? <EntryMetadata item={item} /> : null}
       {item.title ? <h3 className={`${featured ? 'mt-3 text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'} break-words font-semibold leading-tight tracking-[-0.025em] text-[var(--text-primary)]`}>{item.title}</h3> : <p className="type-section-heading break-words">{domain(item.url)}</p>}
       {item.note ? <p className="type-reading mt-4 whitespace-pre-line">{item.note}</p> : null}
-      {!featured ? <div className="mt-6"><MediaPresentation item={item} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /></div> : null}
+      {!featured ? <div className="mt-6"><MediaPresentation item={item} previewId={previewId} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /></div> : null}
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-        {item.trustedEmbedUrl ? <button type="button" aria-expanded={previewOpen} onClick={onTogglePreview} className="focusable-surface inline-flex min-h-11 items-center border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
+        {item.trustedEmbedUrl ? <button ref={previewActionRef} type="button" data-preview-action aria-controls={previewId} aria-expanded={previewOpen} onClick={onTogglePreview} className="focusable-surface inline-flex min-h-11 items-center border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
         <a href={item.url} target="_blank" rel="noopener noreferrer" className="focusable-surface inline-flex min-h-11 items-center gap-2 border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]" aria-label={`Open ${item.provider} in a new tab`}>Open {item.provider}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
       </div>
     </div>
@@ -102,28 +111,28 @@ function EntryMetadata({ item }: { item: RabbitHoleBrowserItem }) {
   </div>;
 }
 
-function MediaPresentation({ item, previewOpen, onTogglePreview }: { item: RabbitHoleBrowserItem; previewOpen: boolean; onTogglePreview: () => void }) {
+function MediaPresentation({ item, previewId, previewOpen, onTogglePreview }: { item: RabbitHoleBrowserItem; previewId: string; previewOpen: boolean; onTogglePreview: () => void }) {
   if (previewOpen && item.trustedEmbedUrl && item.trustedEmbedProvider === 'YouTube') {
-    return <div className="w-full overflow-hidden bg-black" style={{ aspectRatio: '16 / 9' }}>
-      <iframe src={item.trustedEmbedUrl} title={`${item.title || item.provider} YouTube preview`} loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" referrerPolicy="strict-origin-when-cross-origin" className="h-full w-full border-0" />
+    return <div id={previewId} role="region" aria-label={`${item.title || item.provider} preview`} className="w-full overflow-hidden bg-black" style={{ aspectRatio: '16 / 9' }}>
+      <iframe src={item.trustedEmbedUrl} title={`${item.title || item.provider} YouTube preview`} loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" className="h-full w-full border-0" />
     </div>;
   }
   if (previewOpen && item.trustedEmbedUrl && item.trustedEmbedProvider === 'Spotify') {
-    return <div className="w-full max-w-2xl overflow-hidden"><SpotifyPlaylistEmbed title={item.title || 'Spotify playlist'} spotifyEmbedUrl={item.trustedEmbedUrl} /></div>;
+    return <div id={previewId} role="region" aria-label={`${item.title || item.provider} preview`} className="w-full max-w-2xl overflow-hidden"><SpotifyPlaylistEmbed title={item.title || 'Spotify playlist'} spotifyEmbedUrl={item.trustedEmbedUrl} /></div>;
   }
 
   const fallback = <>
     {item.thumbnailUrl ? <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={item.thumbnailUrl} alt={`${item.title || item.provider} preview image`} loading="lazy" className="h-full w-full object-cover" />
-      {item.trustedEmbedUrl ? <span aria-hidden="true" className="absolute inset-0 grid place-items-center bg-black/20"><span className="grid h-14 w-14 place-items-center rounded-full bg-black/75 text-sm font-semibold text-white">Play</span></span> : null}
+      {item.trustedEmbedUrl ? <span aria-hidden="true" className="absolute inset-0 grid place-items-center bg-black/20"><span className="grid h-14 w-14 place-items-center rounded-full bg-black/75 text-white"><Play className="h-5 w-5" fill="currentColor" /></span></span> : null}
     </> : <span className="grid min-h-48 place-items-center text-[var(--text-muted)]"><span className="text-center"><ImageIcon className="mx-auto h-10 w-10" /><span className="type-metadata mt-3 block">{item.provider}</span></span></span>}
   </>;
   const className = "focusable-surface relative grid w-full place-items-center overflow-hidden bg-[var(--bg-2)] text-left";
   const style = { aspectRatio: item.thumbnailAspectRatio || 16 / 9 };
   return item.trustedEmbedUrl
-    ? <button type="button" onClick={onTogglePreview} className={`${className} cursor-pointer`} style={style} aria-label={`Load ${item.trustedEmbedProvider} preview for ${item.title || item.provider}`}>{fallback}</button>
-    : <div className={className} style={style}>{fallback}</div>;
+    ? <button id={previewId} type="button" aria-expanded="false" onClick={onTogglePreview} className={`${className} cursor-pointer`} style={style} aria-label={`Load ${item.trustedEmbedProvider} preview for ${item.title || item.provider}`}>{fallback}</button>
+    : <div id={previewId} className={className} style={style}>{fallback}</div>;
 }
 
 function formatDate(value: string) {
