@@ -10,7 +10,7 @@ import { fetchSpotifyOEmbed, type SpotifyOEmbedResult } from './spotify-oembed.t
 import { downloadSpotifyThumbnail, type SpotifyDownloadResult } from './spotify-thumbnail-download.ts';
 
 export type GenerateSpotifyThumbnailFailure = 'invalid-request' | 'wrong-document-type' | 'document-not-found' | 'unsupported-source' | 'source-changed' | 'thumbnail-protected' | 'replacement-confirmation-required' | 'provider-not-found' | 'provider-rate-limited' | 'provider-timeout' | 'provider-unavailable' | 'unsafe-provider-response' | 'no-thumbnail' | 'unsafe-thumbnail-url' | 'thumbnail-download-failed' | 'thumbnail-too-large' | 'thumbnail-invalid' | 'thumbnail-processing-failed' | 'sanity-upload-failed' | 'document-conflict' | 'document-patch-failed';
-export type GenerateSpotifyThumbnailResult = { ok: true; documentId: string; assetId: string; sha256: string } | { ok: false; reason: GenerateSpotifyThumbnailFailure };
+export type GenerateSpotifyThumbnailResult = { ok: true; documentId: string; assetId: string; sha256: string; width: number; height: number; byteLength: number } | { ok: false; reason: GenerateSpotifyThumbnailFailure };
 
 type LinkDocument = { _id: string; _rev: string; _type: string; url?: string; thumbnail?: { asset?: { _ref?: string } }; thumbnailAutomation?: ThumbnailAutomationProvenance };
 type UploadedAsset = { _id: string };
@@ -26,6 +26,7 @@ export type GenerateSpotifyThumbnailDependencies = {
   oEmbed?: (canonicalUrl: string) => Promise<SpotifyOEmbedResult>;
   download?: (url: string) => Promise<SpotifyDownloadResult>;
   now?: () => Date;
+  onProgress?: (stage: 'metadata' | 'download' | 'sanitize' | 'upload' | 'patch') => void;
 };
 
 export async function generateSpotifyThumbnail(command: { documentId: string; expectedRevision: string; sourceCanonicalUrl: string; replacementConfirmed: boolean }, dependencies: GenerateSpotifyThumbnailDependencies): Promise<GenerateSpotifyThumbnailResult> {
@@ -40,15 +41,19 @@ export async function generateSpotifyThumbnail(command: { documentId: string; ex
   const overwrite = decideThumbnailOverwrite({ currentThumbnailAssetRef: initial.thumbnail?.asset?._ref, currentSourceUrl: initial.url, provenance: initial.thumbnailAutomation, replacementConfirmed: command.replacementConfirmed });
   if (!overwrite.allowed) return fail(overwrite.requiresConfirmation ? 'replacement-confirmation-required' : 'thumbnail-protected');
 
+  dependencies.onProgress?.('metadata');
   const metadata = await (dependencies.oEmbed ?? fetchSpotifyOEmbed)(parsed.canonicalUrl);
   if (!metadata.ok) return fail(metadata.reason === 'invalid-source' ? 'unsupported-source' : metadata.reason);
   const artwork = validateSpotifyArtworkUrl(metadata.thumbnailUrl);
   if (!artwork.ok) return fail('unsafe-thumbnail-url');
+  dependencies.onProgress?.('download');
   const downloaded = await (dependencies.download ?? downloadSpotifyThumbnail)(artwork.url);
   if (!downloaded.ok) return fail(downloaded.reason === 'unsafe-address' ? 'thumbnail-download-failed' : downloaded.reason);
+  dependencies.onProgress?.('sanitize');
   const shortHash = downloaded.thumbnail.sha256.slice(0, 12);
   let asset: UploadedAsset;
   try {
+    dependencies.onProgress?.('upload');
     asset = await dependencies.client.assets.upload('image', downloaded.thumbnail.bytes, { filename: `spotify-${parsed.entityType}-${parsed.entityId}-${shortHash}.webp`, contentType: 'image/webp' });
   } catch { return fail('sanity-upload-failed'); }
   if (!asset._id) return fail('sanity-upload-failed');
@@ -59,11 +64,12 @@ export async function generateSpotifyThumbnail(command: { documentId: string; ex
   if (current.thumbnail?.asset?._ref !== initial.thumbnail?.asset?._ref || JSON.stringify(current.thumbnailAutomation ?? null) !== JSON.stringify(initial.thumbnailAutomation ?? null)) return fail('document-conflict');
   const provenance = { provider: 'spotify', sourceCanonicalUrl: parsed.canonicalUrl, fetchedAt: (dependencies.now ?? (() => new Date()))().toISOString(), assetRef: asset._id, sha256: downloaded.thumbnail.sha256, method: 'spotify-oembed-v1' };
   try {
+    dependencies.onProgress?.('patch');
     await dependencies.client.patch(command.documentId).ifRevisionId(initial._rev).set({ thumbnail: { _type: 'image', asset: { _type: 'reference', _ref: asset._id } }, thumbnailAutomation: { _type: 'thumbnailAutomation', ...provenance } }).commit();
   } catch (error) {
     return fail(isConflict(error) ? 'document-conflict' : 'document-patch-failed');
   }
-  return { ok: true, documentId: command.documentId, assetId: asset._id, sha256: downloaded.thumbnail.sha256 };
+  return { ok: true, documentId: command.documentId, assetId: asset._id, sha256: downloaded.thumbnail.sha256, width: downloaded.thumbnail.width, height: downloaded.thumbnail.height, byteLength: downloaded.thumbnail.byteLength };
 }
 
 function validDocumentId(value: string) { return typeof value === 'string' && value.length <= 256 && /^(?:drafts\.)?[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*$/.test(value); }

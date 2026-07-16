@@ -10,7 +10,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "thumbnail:spotify": "sanity exec scripts/generate-spotify-thumbnail.ts --with-user-token"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1085.0",
