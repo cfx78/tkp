@@ -1,4 +1,6 @@
 import { defineField, defineType } from 'sanity';
+import { parseSpotifyPlaylistSource } from '../../lib/spotify-playlist';
+import { SpotifyPlaylistSourceInput } from '../components/spotify-playlist-source-input';
 import { nsfwFields, publishedAtField } from './sharedFields';
 
 export default defineType({ name: 'playlist', title: 'Playlist', type: 'document', fields: [
@@ -6,19 +8,14 @@ export default defineType({ name: 'playlist', title: 'Playlist', type: 'document
   defineField({ name: 'slug', title: 'Slug', type: 'slug', options: { source: 'title' } }),
   defineField({
     name: 'spotifyUrl',
-    title: 'Spotify URL',
-    description: 'Paste the normal Spotify playlist URL.',
+    title: 'Playlist URL or embed code',
+    description: 'Paste a Spotify playlist URL, share URL, embed URL, or complete iframe. Only the canonical public playlist URL is stored.',
     type: 'url',
-    validation: (Rule) => Rule.required().uri({ scheme: ['https'] }).custom((value) => {
+    components: { input: SpotifyPlaylistSourceInput },
+    validation: (Rule) => Rule.required().custom((value) => {
       if (!value) return true;
-      try {
-        const url = new URL(value);
-        return url.hostname === 'open.spotify.com' && /^\/playlist\/[^/]+\/?$/.test(url.pathname)
-          ? true
-          : 'Enter a normal open.spotify.com playlist URL.';
-      } catch {
-        return 'Enter a valid Spotify playlist URL.';
-      }
+      const result = parseSpotifyPlaylistSource(value);
+      return result.ok ? true : result.reason;
     })
   }),
   defineField({

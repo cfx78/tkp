@@ -127,6 +127,16 @@ function parseSpotify(url: URL): ParsedLinkSource | null {
   const kind = parts[offset];
   const id = parts[offset + 1];
   if (!kind || !SPOTIFY_KINDS.has(kind) || !id || !SPOTIFY_ID.test(id)) return null;
+  if (kind === 'playlist') {
+    const playlist = parseSpotifyPlaylistSource(url.toString());
+    return playlist.ok ? {
+      canonicalUrl: playlist.canonicalUrl,
+      provider: 'spotify',
+      contentKind: 'playlist',
+      providerId: playlist.playlistId,
+      trustedEmbedUrl: playlist.trustedEmbedUrl,
+    } : null;
+  }
   return {
     canonicalUrl: `https://open.spotify.com/${kind}/${id}`,
     provider: 'spotify',
@@ -245,3 +255,5 @@ function decodeHtmlUrl(value: string) {
     .replace(/&#x26;/gi, '&')
     .trim();
 }
+// @ts-expect-error Node 24 executes the parser tests directly and requires the extension.
+import { parseSpotifyPlaylistSource } from './spotify-playlist.ts';
