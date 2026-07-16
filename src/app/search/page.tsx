@@ -6,7 +6,7 @@ type FilterItem = { _id: string; title?: string; name?: string; group?: string }
 type RawSearchResult = {
   _id: string; _type: string; title?: string; name?: string; quoteText?: string; person?: string; status?: string; releaseType?: string; plainDescription?: string; shortDescription?: string; shortNote?: string;
   note?: string; platformAuto?: string; platformOverride?: string; url?: string;
-  spotifyUrl?: string; sourceUrl?: string; publishedAt?: string; _createdAt?: string; slug?: string; imageUrl?: string;
+  spotifyUrl?: string; appleMusicUrl?: string; youtubeMusicUrl?: string; sourceUrl?: string; publishedAt?: string; _createdAt?: string; slug?: string; imageUrl?: string;
   tagIds?: string[]; laneId?: string; relatedLaneIds?: string[]; fixationIds?: string[]; releaseIds?: string[];
   containingReleaseIds?: string[];
 };
@@ -67,7 +67,10 @@ function resultDestination(item: RawSearchResult): { href: string; external?: bo
   if (item._type === 'release' && item.slug) return { href: `/releases/${item.slug}` };
   if (item._type === 'lane' && item.slug) return { href: `/lanes/${item.slug}` };
   if (item._type === 'link' && item.url) return { href: item.url, external: true };
-  if (item._type === 'playlist' && item.spotifyUrl) return { href: item.spotifyUrl, external: true };
+  if (item._type === 'playlist') {
+    const href = item.spotifyUrl || item.appleMusicUrl || item.youtubeMusicUrl;
+    return href ? { href, external: true } : null;
+  }
   if (item._type === 'quote' && item.sourceUrl) return { href: item.sourceUrl, external: true };
   if (item._type === 'fixation' && item.slug) return { href: `/fixations/${item.slug}` };
   return null;

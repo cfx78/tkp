@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ExternalLink, Filter, X } from 'lucide-react';
 import { getSpotifyPlaylistEmbedUrl } from '@/src/lib/spotify';
+import { youtubePlaylistProviderLabel } from '@/src/lib/youtube-playlist';
 import type { LinkFeedItem, LogFeedItem, LogsFeedItem, LogsTag, LogType, PlaylistFeedItem, QuoteFeedItem } from '@/src/types/logs';
 import { SpotifyPlaylistEmbed } from './spotify-playlist-embed';
 
@@ -170,7 +171,7 @@ function PlaylistEntry({ item }: { item: PlaylistFeedItem }) {
     <h3 className="break-words text-2xl font-semibold leading-tight tracking-[-0.025em] text-[var(--text-primary)] sm:text-3xl">{item.title}</h3>
     {item.shortNote ? <p className="type-reading mt-3 whitespace-pre-line">{item.shortNote}</p> : null}
     {hasPreview ? previewOpen ? <div className="mt-4 max-w-xl overflow-hidden"><SpotifyPlaylistEmbed title={item.title} spotifyUrl={item.spotifyUrl} spotifyEmbedUrl={item.spotifyEmbedUrl} /></div> : <button type="button" onClick={() => setPreviewOpen(true)} className="focusable-surface mt-4 inline-flex min-h-11 items-center border border-[var(--line-subtle)] px-4 text-sm font-semibold text-[var(--text-primary)] hover:bg-white/[0.05]">Load Spotify preview</button> : null}
-    <EntryFooter tags={item.tags}><div className="flex flex-wrap gap-x-5">{item.spotifyUrl ? <ExternalAction href={item.spotifyUrl}>Spotify</ExternalAction> : null}{item.appleMusicUrl ? <ExternalAction href={item.appleMusicUrl}>Apple Music</ExternalAction> : null}{item.youtubeMusicUrl ? <ExternalAction href={item.youtubeMusicUrl}>YouTube Music</ExternalAction> : null}</div></EntryFooter>
+    <EntryFooter tags={item.tags}><div className="flex flex-wrap gap-x-5">{item.spotifyUrl ? <ExternalAction href={item.spotifyUrl}>Spotify</ExternalAction> : null}{item.appleMusicUrl ? <ExternalAction href={item.appleMusicUrl}>Apple Music</ExternalAction> : null}{item.youtubeMusicUrl ? <ExternalAction href={item.youtubeMusicUrl}>{youtubePlaylistProviderLabel(item.youtubeMusicUrl)}</ExternalAction> : null}</div></EntryFooter>
   </div>;
 }
 

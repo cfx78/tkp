@@ -7,6 +7,7 @@ import { LaneDetailPlayer } from '@/src/components/lane-detail-player';
 import { MediaArtwork, ProtocolLabel, SectionHeading } from '@/src/components/presentation-primitives';
 import { defaultLaneAccent, defaultLaneSecondary, validatedLaneColor } from '@/src/lib/lane-colors';
 import { buildLaneQueue, type LaneBeatCandidate } from '@/src/lib/lane-queue';
+import { youtubePlaylistProviderLabel } from '@/src/lib/youtube-playlist';
 import { fetchSanity } from '@/src/sanity/lib/content';
 import { urlFor } from '@/src/sanity/lib/image';
 import { laneDetailQuery } from '@/src/sanity/lib/queries';
@@ -96,7 +97,7 @@ export default async function LanePage({ params }: Props) {
       <SectionHeading label="Listening trail" title="Related Playlists" />
       <div className="mt-5 border-t border-[var(--line-subtle)]">{lane.playlists.map((playlist) => <article key={playlist._id} className="grid gap-4 border-b border-[var(--line-subtle)] py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
         <div className="min-w-0"><h3 className="font-semibold text-[var(--text-primary)]">{playlist.title}</h3>{playlist.shortNote ? <p className="type-small mt-2 max-w-2xl">{playlist.shortNote}</p> : null}</div>
-        <div className="flex flex-wrap gap-x-4">{playlist.spotifyUrl ? <ExternalPlaylistLink href={playlist.spotifyUrl} label="Spotify" /> : null}{playlist.appleMusicUrl ? <ExternalPlaylistLink href={playlist.appleMusicUrl} label="Apple Music" /> : null}{playlist.youtubeMusicUrl ? <ExternalPlaylistLink href={playlist.youtubeMusicUrl} label="YouTube Music" /> : null}</div>
+        <div className="flex flex-wrap gap-x-4">{playlist.spotifyUrl ? <ExternalPlaylistLink href={playlist.spotifyUrl} label="Spotify" /> : null}{playlist.appleMusicUrl ? <ExternalPlaylistLink href={playlist.appleMusicUrl} label="Apple Music" /> : null}{playlist.youtubeMusicUrl ? <ExternalPlaylistLink href={playlist.youtubeMusicUrl} label={youtubePlaylistProviderLabel(playlist.youtubeMusicUrl)} /> : null}</div>
       </article>)}</div>
     </section> : null}
 

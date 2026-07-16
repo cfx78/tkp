@@ -70,7 +70,7 @@ export const latestLinkQuery = groq`*[_type == "link" && nsfw != true] | order(c
 }`;
 
 export const latestPlaylistQuery = groq`*[_type == "playlist" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
-  _id, title, "slug": slug.current, spotifyUrl, spotifyEmbedUrl, shortNote, publishedAt
+  _id, title, "slug": slug.current, spotifyUrl, spotifyEmbedUrl, appleMusicUrl, youtubeMusicUrl, shortNote, publishedAt
 }`;
 
 export const latestThoughtQuery = groq`*[_type == "log" && logType == "thought" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc)[0]{
@@ -268,6 +268,8 @@ export const searchResultsQuery = groq`*[
   platformOverride,
   url,
   spotifyUrl,
+  appleMusicUrl,
+  youtubeMusicUrl,
   sourceUrl,
   publishedAt,
   _createdAt,

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowUpRight, ExternalLink, ImageIcon } from 'lucide-react';
 import type { SanityImageSource } from '@sanity/image-url';
 import { ProtocolLabel, SectionHeading } from '@/src/components/presentation-primitives';
+import { youtubePlaylistProviderLabel } from '@/src/lib/youtube-playlist';
 import { fetchSanity } from '@/src/sanity/lib/content';
 import { urlFor } from '@/src/sanity/lib/image';
 import { fixationDetailQuery } from '@/src/sanity/lib/queries';
@@ -168,7 +169,7 @@ function TrailActions({ item }: { item: TrailItem }) {
   if (item.kind === 'log') return <Link href="/logs" className="focusable-surface mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent)]">Open Logs <ArrowUpRight className="ml-2 h-4 w-4" /></Link>;
   if (item.kind === 'link') return safeExternalUrl(item.url) ? <ExternalAction href={safeExternalUrl(item.url) as string} label={`Open ${item.platformOverride || item.platformAuto || 'link'}`} /> : null;
   if (item.kind === 'quote') return safeExternalUrl(item.sourceUrl) ? <ExternalAction href={safeExternalUrl(item.sourceUrl) as string} label="Open source" /> : null;
-  const actions = [{ label: 'Spotify', href: safeExternalUrl(item.spotifyUrl) }, { label: 'Apple Music', href: safeExternalUrl(item.appleMusicUrl) }, { label: 'YouTube Music', href: safeExternalUrl(item.youtubeMusicUrl) }].filter((action): action is { label: string; href: string } => Boolean(action.href));
+  const actions = [{ label: 'Spotify', href: safeExternalUrl(item.spotifyUrl) }, { label: 'Apple Music', href: safeExternalUrl(item.appleMusicUrl) }, { label: youtubePlaylistProviderLabel(item.youtubeMusicUrl), href: safeExternalUrl(item.youtubeMusicUrl) }].filter((action): action is { label: string; href: string } => Boolean(action.href));
   return actions.length ? <div className="mt-4 flex flex-wrap gap-x-5">{actions.map((action) => <ExternalAction key={action.label} href={action.href} label={action.label} />)}</div> : null;
 }
 
