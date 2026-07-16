@@ -19,6 +19,7 @@ export default defineType({ name: 'link', title: 'Link', type: 'document', field
   defineField({ name: 'platformOverride', title: 'Platform Override', type: 'string', options: { list: platforms } }),
   defineField({ name: 'note', title: 'Note', type: 'text' }),
   defineField({ name: 'thumbnail', title: 'Thumbnail', type: 'image' }),
+  defineField({ name: 'thumbnailAutomation', title: 'Thumbnail Automation', type: 'thumbnailAutomation', hidden: true, readOnly: true }),
   defineField({ name: 'embedUrl', title: 'Embed URL', type: 'url' }),
   defineField({ name: 'relatedFixations', title: 'Related Fixations', type: 'array', of: [{ type: 'reference', to: [{ type: 'fixation' }] }] }),
   defineField({ name: 'relatedBeats', title: 'Related Beats', type: 'array', of: [{ type: 'reference', to: [{ type: 'beat' }] }] }),
