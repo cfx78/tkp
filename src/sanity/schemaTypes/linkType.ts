@@ -1,11 +1,20 @@
 import { defineField, defineType } from 'sanity';
+import { LinkSourceInput } from '../components/link-source-input';
+import { parseLinkSource } from '../../lib/link-source';
 import { nsfwFields, publishedAtField } from './sharedFields';
 
 const platforms = ['YouTube', 'Instagram', 'TikTok', 'X/Twitter', 'Spotify', 'Apple Music', 'YouTube Music', 'Letterboxd', 'Website/Article', 'Other'];
 
 export default defineType({ name: 'link', title: 'Link', type: 'document', fields: [
   defineField({ name: 'title', title: 'Title', type: 'string' }),
-  defineField({ name: 'url', title: 'URL', type: 'url', validation: (Rule) => Rule.required() }),
+  defineField({
+    name: 'url',
+    title: 'Post URL or embed code',
+    description: 'Paste a public URL or copied provider embed. Only the normalized destination is stored.',
+    type: 'url',
+    components: { input: LinkSourceInput },
+    validation: (Rule) => Rule.required().custom((value) => !value || parseLinkSource(value) ? true : 'Enter a safe public HTTP/HTTPS destination.')
+  }),
   defineField({ name: 'platformAuto', title: 'Auto-detected Platform', type: 'string', readOnly: true }),
   defineField({ name: 'platformOverride', title: 'Platform Override', type: 'string', options: { list: platforms } }),
   defineField({ name: 'note', title: 'Note', type: 'text' }),
