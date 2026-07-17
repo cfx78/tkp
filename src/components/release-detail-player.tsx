@@ -31,7 +31,7 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
       onClick={playRelease}
       disabled={!beats.length || firstTrackIsLoading}
       aria-label={`Play release ${releaseTitle}`}
-      className="focusable-surface inline-flex min-h-11 items-center gap-3 bg-[var(--text-primary)] px-5 text-sm font-semibold text-[var(--bg-0)] hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
+      className="action-control focusable-surface"
     >
       {firstTrackIsLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" fill="currentColor" />}
       {beats.length ? 'Play Release' : 'Release unavailable'}
@@ -71,7 +71,7 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
                 onClick={playTrack}
                 disabled={loading}
                 aria-label={`${playing ? 'Pause' : active ? 'Resume' : 'Play'} ${beat.title}`}
-                className="focusable-surface grid h-11 w-11 place-items-center rounded-full border border-[var(--line-subtle)] text-[var(--text-primary)] hover:bg-white/[0.06] disabled:opacity-40"
+                className="icon-control focusable-surface"
               >
                 {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : playing ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
               </button>

@@ -22,11 +22,13 @@ export function PlaylistPreview({ title, className = '', ...sources }: PlaylistP
   };
 
   return <div className={className}>
-    {options.length > 1 ? <div className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label="Preview provider">
-      <span className="type-metadata">Preview</span>
+    {options.length > 1 ? <div className="border-l border-[var(--line-subtle)] pl-3" aria-label="Preview provider">
+      <span className="type-metadata block">Preview provider</span>
+      <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
       {options.map((option) => <button key={option.provider} type="button" aria-pressed={selected.provider === option.provider} onClick={() => selectProvider(option.provider)} className={`focusable-surface inline-flex min-h-11 items-center border-b px-1 text-sm font-semibold ${selected.provider === option.provider ? 'border-[var(--accent)] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--line-subtle)] hover:text-[var(--text-primary)]'}`}>{option.label}</button>)}
+      </div>
     </div> : null}
-    <button type="button" aria-controls={previewId} aria-expanded={previewOpen} onClick={() => setPreviewOpen((open) => !open)} className="focusable-surface mt-2 inline-flex min-h-11 items-center border border-[var(--line-subtle)] px-4 text-sm font-semibold text-[var(--text-primary)] hover:bg-white/[0.05]">{previewOpen ? 'Close Preview' : `Load ${selected.label} Preview`}</button>
+    <button type="button" aria-controls={previewId} aria-expanded={previewOpen} onClick={() => setPreviewOpen((open) => !open)} className="action-control focusable-surface mt-4">{previewOpen ? 'Close Preview' : `Load ${selected.label} Preview`}</button>
     {previewOpen ? <div id={previewId} role="region" aria-label={`${title} ${selected.label} preview`} className="mt-3 w-full overflow-hidden"><ProviderIframe key={selected.provider} title={title} option={selected} /></div> : null}
   </div>;
 }

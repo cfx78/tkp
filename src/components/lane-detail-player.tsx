@@ -29,7 +29,7 @@ export function LaneDetailPlayer({ laneName, beats, description, accentColor }: 
       onClick={() => beats.length && void player.playQueue(beats, { type: 'lane', title: laneName }, 0, false)}
       disabled={!beats.length || firstBeatIsLoading}
       aria-label={`Play lane ${laneName}`}
-      className="focusable-surface mt-7 inline-flex min-h-11 items-center gap-3 border bg-[var(--text-primary)] px-5 text-sm font-semibold text-[var(--bg-0)] hover:bg-white disabled:cursor-not-allowed disabled:opacity-35"
+      className="action-control focusable-surface mt-7"
       style={{ borderColor: accentColor }}
     >
       {firstBeatIsLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" fill="currentColor" />}
@@ -69,7 +69,7 @@ export function LaneDetailPlayer({ laneName, beats, description, accentColor }: 
                 onClick={playBeat}
                 disabled={loading}
                 aria-label={`${playing ? 'Pause' : active ? 'Resume' : 'Play'} ${beat.title}`}
-                className="focusable-surface grid h-11 w-11 place-items-center rounded-full border text-[var(--text-primary)] hover:bg-white/[0.06] disabled:opacity-40"
+                className="icon-control focusable-surface"
                 style={{ borderColor: active ? accentColor : undefined }}
               >
                 {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : playing ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4" fill="currentColor" />}
