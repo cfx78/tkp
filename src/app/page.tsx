@@ -45,7 +45,7 @@ export default async function HomePage() {
       <div className="min-w-0 md:py-8">
         <ProtocolLabel>Latest Beat</ProtocolLabel>
         <h1 id="latest-beat-title" className="mt-4 max-w-2xl break-words text-[clamp(2.5rem,8vw,5.75rem)] font-semibold leading-[0.98] tracking-[-0.05em] text-[var(--text-primary)]">{beat?.slug ? <Link href={`/player/beats/${beat.slug}`} className="focusable-surface hover:text-[var(--accent)]">{beat.title}</Link> : beat?.title || 'No beats published yet'}</h1>
-        <p className="type-metadata mt-5">{beat?.lane?.name ? beat.lane.slug ? <Link href={`/lanes/${beat.lane.slug}`} className="focusable-surface hover:text-[var(--text-primary)]">{beat.lane.name}</Link> : beat.lane.name : 'The archive is waiting'}</p>
+        <p className="type-metadata mt-5">{beat?.lane?.name ? beat.lane.slug ? <Link href={`/lanes/${beat.lane.slug}`} className="metadata-link focusable-surface">{beat.lane.name}</Link> : beat.lane.name : 'The archive is waiting'}</p>
         {beat?.shortNote ? <p className="type-small mt-5 max-w-lg">{beat.shortNote}</p> : null}
         <div className="mt-7 flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">{playerBeat ? <HomeBeatPlay beat={playerBeat} /> : null}{beat?.slug ? <Link href={`/player/beats/${beat.slug}`} className="editorial-link focusable-surface">Beat File<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link> : null}</div>
       </div>

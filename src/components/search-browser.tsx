@@ -73,7 +73,7 @@ export function SearchBrowser({ groups, results }: { groups: SearchFilterGroup[]
       <div className="mt-4 border-t border-white/10">
         {filteredResults.length ? filteredResults.map((result) => {
           const content = <><MediaArtwork src={result.imageUrl} size="compact" /><span className="min-w-0"><span className="block truncate font-semibold text-white">{result.title}</span><span className="type-metadata mt-1 block truncate">{result.type}{result.subtitle ? ` · ${result.subtitle}` : ''}{result.date ? ` · ${formatDate(result.date)}` : ''}</span></span><span aria-hidden="true" className="text-mist/50">↗</span></>;
-          const className = 'focusable-surface grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 py-3';
+          const className = 'row-link focusable-surface grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 py-3';
           return result.external
             ? <a key={result.id} href={result.href} target="_blank" rel="noreferrer" className={className}>{content}</a>
             : <Link key={result.id} href={result.href} className={className}>{content}</Link>;

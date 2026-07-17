@@ -38,6 +38,8 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
 
   useEffect(() => {
     exitRef.current?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -60,13 +62,14 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => { document.removeEventListener('keydown', handleKeyDown); document.body.style.overflow = previousOverflow; };
   }, [onClose]);
 
   return (
     <div
       ref={containerRef}
-      role="region"
+      role="dialog"
+      aria-modal="true"
       aria-label="Listening Mode"
       aria-live="off"
       style={style}
@@ -84,7 +87,6 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
         {beat ? (
           <div className="listening-mode__composition mx-auto grid w-full flex-1 content-center items-center gap-6 py-5 md:grid-cols-[minmax(0,1.15fr)_minmax(17rem,0.85fr)] md:gap-12 md:py-8">
             <div className="listening-mode__art-stage relative mx-auto w-full max-w-[min(72vw,30rem)] md:max-w-[min(42vw,34rem)]">
-              {cover ? <img src={cover} alt="" aria-hidden="true" className="listening-mode__art-echo absolute inset-[8%] -z-10 h-[84%] w-[84%] object-cover" /> : null}
               <div className="listening-mode__halo absolute -inset-[12%] -z-20" aria-hidden="true" />
               <div className="aspect-square overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)] shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
                 {cover ? <img src={cover} alt={`Artwork for ${beat.title}`} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><ListMusic aria-hidden="true" className="h-16 w-16 text-white/15" /></div>}
@@ -108,11 +110,11 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
               </div>
 
               <div className="mt-5 flex items-center justify-center gap-5 sm:gap-7 md:justify-start">
-                <button type="button" onClick={() => void player.previous()} disabled={!player.hasPrevious && player.currentTime <= 3} className="grid h-12 w-12 place-items-center text-[var(--text-primary)] disabled:opacity-25" aria-label="Previous Beat"><SkipBack aria-hidden="true" className="h-6 w-6" fill="currentColor" /></button>
-                <button type="button" onClick={() => void player.togglePlayback()} disabled={player.isLoading} className="grid h-16 w-16 place-items-center rounded-full bg-[var(--text-primary)] text-[var(--bg-0)] shadow-[0_0_32px_rgba(var(--listening-accent-rgb)/0.18)] disabled:opacity-50" aria-label={player.isPlaying ? 'Pause' : 'Play'}>
+                <button type="button" onClick={() => void player.previous()} disabled={!player.hasPrevious && player.currentTime <= 3} className="icon-control focusable-surface h-12 w-12 border-white/15" aria-label="Previous Beat"><SkipBack aria-hidden="true" className="h-6 w-6" fill="currentColor" /></button>
+                <button type="button" onClick={() => void player.togglePlayback()} disabled={player.isLoading} className="focusable-surface grid h-16 w-16 place-items-center rounded-[var(--radius-interactive)] border border-white/20 bg-[var(--text-primary)] text-[var(--bg-0)] shadow-[0_0_32px_rgba(var(--listening-accent-rgb)/0.14)] disabled:opacity-50" aria-label={player.isPlaying ? 'Pause' : 'Play'}>
                   {player.isLoading ? <LoaderCircle aria-hidden="true" className="h-6 w-6 animate-spin" /> : player.isPlaying ? <Pause aria-hidden="true" className="h-6 w-6" fill="currentColor" /> : <Play aria-hidden="true" className="ml-0.5 h-6 w-6" fill="currentColor" />}
                 </button>
-                <button type="button" onClick={() => void player.next()} disabled={!player.hasNext} className="grid h-12 w-12 place-items-center text-[var(--text-primary)] disabled:opacity-25" aria-label="Next Beat"><SkipForward aria-hidden="true" className="h-6 w-6" fill="currentColor" /></button>
+                <button type="button" onClick={() => void player.next()} disabled={!player.hasNext} className="icon-control focusable-surface h-12 w-12 border-white/15" aria-label="Next Beat"><SkipForward aria-hidden="true" className="h-6 w-6" fill="currentColor" /></button>
               </div>
               {player.error ? <p className="type-small mt-5 text-[var(--danger)]">Playback is temporarily unavailable. You can exit Listening Mode and try again.</p> : null}
             </section>

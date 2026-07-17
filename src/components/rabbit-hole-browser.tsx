@@ -97,7 +97,7 @@ function RabbitHoleEntry({ item, featured, index, previewOpen, onTogglePreview }
       {!featured ? <div className="mt-6"><MediaPresentation item={item} previewId={previewId} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /></div> : null}
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
         {item.trustedEmbedUrl ? <button ref={previewActionRef} type="button" data-preview-action aria-controls={previewId} aria-expanded={previewOpen} onClick={onTogglePreview} className="focusable-surface inline-flex min-h-11 items-center border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
-        <a href={item.url} target="_blank" rel="noopener noreferrer" className="focusable-surface inline-flex min-h-11 items-center gap-2 border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]" aria-label={`Open ${item.provider} in a new tab`}>Open {item.provider}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
+        <a href={item.url} target="_blank" rel="noopener noreferrer" className="external-link focusable-surface" aria-label={`Open ${item.provider} in a new tab`}>Open {item.provider}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
       </div>
     </div>
   </article>;

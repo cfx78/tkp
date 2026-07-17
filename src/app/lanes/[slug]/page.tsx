@@ -60,7 +60,7 @@ export default async function LanePage({ params }: Props) {
   const beats = buildLaneQueue(lane.beats, lane._id);
 
   return <main className="mx-auto w-full max-w-6xl pb-8">
-    <Link href="/player" className="focusable-surface inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+    <Link href="/player" className="editorial-link focusable-surface">
       <ArrowLeft className="h-4 w-4" /> Back to Player
     </Link>
 
@@ -110,7 +110,7 @@ export default async function LanePage({ params }: Props) {
 }
 
 function ExternalPlaylistLink({ href, label }: { href: string; label: string }) {
-  return <a href={href} target="_blank" rel="noreferrer noopener" className="focusable-surface inline-flex min-h-11 items-center text-sm text-[var(--text-secondary)] hover:text-[var(--accent)]" aria-label={`Open ${label} playlist in a new tab`}>{label}<ExternalLink className="ml-2 h-4 w-4" /></a>;
+  return <a href={href} target="_blank" rel="noreferrer noopener" className="external-link focusable-surface" aria-label={`Open ${label} playlist in a new tab`}>{label}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>;
 }
 
 function isValidSlug(slug: string) {

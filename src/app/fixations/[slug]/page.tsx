@@ -82,7 +82,7 @@ export default async function FixationPage({ params }: Props) {
   const hasRelated = pinned.length > 0 || recent.length > 0 || beats.length > 0 || releases.length > 0;
 
   return <main className="mx-auto w-full max-w-6xl overflow-x-clip pb-8">
-    <Link href="/fixations" className="focusable-surface inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+    <Link href="/fixations" className="editorial-link focusable-surface">
       <ArrowLeft className="h-4 w-4" /> Back to Fixations
     </Link>
 
@@ -98,7 +98,7 @@ export default async function FixationPage({ params }: Props) {
           <ProtocolLabel>{fixation.isCore ? 'Core Fixation' : statusLabel(fixation.status)}</ProtocolLabel>
           <h1 className="mt-4 max-w-[8ch] break-words text-[clamp(2.75rem,13vw,7rem)] font-semibold leading-[0.88] tracking-[-0.06em] text-[var(--text-primary)] sm:max-w-3xl">{fixation.title}</h1>
           {fixation.shortDescription ? <p className="mt-6 max-w-xl text-[1.05rem] leading-8 text-[var(--text-secondary)] sm:text-lg">{fixation.shortDescription}</p> : null}
-          {fixation.hasRabbitHoleItems ? <Link href={`/fixations/${fixation.slug}/rabbit-hole`} className="focusable-surface mt-7 inline-flex min-h-11 items-center border-b border-[var(--accent)] px-1 text-sm font-semibold text-[var(--text-primary)]">Enter Rabbit Hole <ArrowUpRight className="ml-2 h-4 w-4" /></Link> : null}
+          {fixation.hasRabbitHoleItems ? <Link href={`/fixations/${fixation.slug}/rabbit-hole`} className="text-cta focusable-surface mt-7">Enter Rabbit Hole <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link> : null}
         </div>
         <div className="relative order-1 mx-auto w-full max-w-[42rem] sm:order-2 sm:mx-0">
           <div aria-hidden="true" className="absolute inset-[12%] -z-10 bg-[var(--artwork-halo)] opacity-50 blur-3xl" />
@@ -166,7 +166,7 @@ function TrailEntry({ item, index, selected = false }: { item: TrailItem; index:
 }
 
 function TrailActions({ item }: { item: TrailItem }) {
-  if (item.kind === 'log') return <Link href="/logs" className="focusable-surface mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent)]">Open Logs <ArrowUpRight className="ml-2 h-4 w-4" /></Link>;
+  if (item.kind === 'log') return <Link href="/logs" className="editorial-link focusable-surface mt-4">Open Logs <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link>;
   if (item.kind === 'link') return safeExternalUrl(item.url) ? <ExternalAction href={safeExternalUrl(item.url) as string} label={`Open ${item.platformOverride || item.platformAuto || 'link'}`} /> : null;
   if (item.kind === 'quote') return safeExternalUrl(item.sourceUrl) ? <ExternalAction href={safeExternalUrl(item.sourceUrl) as string} label="Open source" /> : null;
   const actions = [{ label: 'Spotify', href: safeExternalUrl(item.spotifyUrl) }, { label: 'Apple Music', href: safeExternalUrl(item.appleMusicUrl) }, { label: youtubePlaylistProviderLabel(item.youtubeMusicUrl), href: safeExternalUrl(item.youtubeMusicUrl) }].filter((action): action is { label: string; href: string } => Boolean(action.href));
@@ -174,7 +174,7 @@ function TrailActions({ item }: { item: TrailItem }) {
 }
 
 function ExternalAction({ href, label }: { href: string; label: string }) {
-  return <a href={href} target="_blank" rel="noreferrer noopener" className="focusable-surface inline-flex min-h-11 items-center text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent)]" aria-label={`${label} in a new tab`}>{label}<ExternalLink className="ml-2 h-4 w-4" /></a>;
+  return <a href={href} target="_blank" rel="noreferrer noopener" className="external-link focusable-surface" aria-label={`${label} in a new tab`}>{label}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>;
 }
 
 function MusicRow({ title, href, label, artwork }: { title: string; href: string; label: string; artwork?: string }) {

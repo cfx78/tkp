@@ -53,7 +53,7 @@ export default async function RabbitHolePage({ params }: Props) {
         {rabbitHole.shortDescription ? <p className="type-reading mt-6 max-w-[var(--reading-measure)]">{rabbitHole.shortDescription}</p> : null}
       </div>
     </header>
-    <Link href={`/fixations/${rabbitHole.slug}`} className="focusable-surface mt-5 inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><ArrowLeft className="h-4 w-4" /> Back to {rabbitHole.title}</Link>
+    <Link href={`/fixations/${rabbitHole.slug}`} className="editorial-link focusable-surface mt-5"><ArrowLeft aria-hidden="true" className="h-4 w-4" /> Back to {rabbitHole.title}</Link>
     <RabbitHoleBrowser categories={rabbitHole.categories} pinnedItems={pinnedItems} feedItems={feedItems} />
   </main>;
 }

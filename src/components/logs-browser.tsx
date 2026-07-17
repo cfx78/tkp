@@ -252,7 +252,7 @@ function ReadingDialog({ log, onClose }: { log: LogFeedItem; onClose: () => void
             {log.body ? <div id="log-reading-body" className="mt-8 space-y-5 text-[1.0625rem] leading-8 text-[var(--text-secondary)]">{paragraphs(log.body).map((paragraph, index) => <p key={`${index}-${paragraph.slice(0, 20)}`} className="whitespace-pre-line">{paragraph}</p>)}</div> : null}
             {log.bullets.length ? <ul className={`${log.body ? 'mt-8' : 'mt-6'} list-disc space-y-3 pl-5 text-[1.0625rem] leading-8 text-[var(--text-secondary)]`}>{log.bullets.map((bullet, index) => <li key={`${index}-${bullet}`}>{bullet}</li>)}</ul> : null}
             {log.tags.length ? <ul aria-label="Tags" className="mt-9 flex flex-wrap gap-2">{log.tags.map((tag) => <li key={tag.id} className="type-metadata border border-white/10 px-2 py-1 text-[var(--text-secondary)]">{tag.name}</li>)}</ul> : null}
-            {log.related.length ? <aside className="mt-12 border-t border-[var(--line-subtle)] pt-6" aria-labelledby="log-related-title"><h3 id="log-related-title" className="type-protocol-label text-[var(--text-muted)]">Related</h3><ul className="mt-3">{log.related.map((item) => <li key={`${item.kind}-${item.id}`}><Link href={item.href} className="focusable-surface flex min-h-11 items-center justify-between gap-4 border-b border-white/[0.08] py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><span>{item.title}</span><span className="type-metadata">{item.kind}</span></Link></li>)}</ul></aside> : null}
+            {log.related.length ? <aside className="mt-12 border-t border-[var(--line-subtle)] pt-6" aria-labelledby="log-related-title"><h3 id="log-related-title" className="type-protocol-label text-[var(--text-muted)]">Related</h3><ul className="mt-3">{log.related.map((item) => <li key={`${item.kind}-${item.id}`}><Link href={item.href} className="row-link focusable-surface flex min-h-11 items-center justify-between gap-4 border-b border-white/[0.08] py-2 text-sm text-[var(--text-secondary)]"><span>{item.title}</span><span className="type-metadata">{item.kind}</span></Link></li>)}</ul></aside> : null}
           </article>
         </div>
       </div>
@@ -266,7 +266,7 @@ function FilterButton({ selected, onClick, children }: { selected: boolean; onCl
 }
 
 function ExternalAction({ href, children }: { href: string; children: ReactNode }) {
-  return <a href={href} target="_blank" rel="noopener noreferrer" className="focusable-surface inline-flex min-h-11 items-center gap-2 border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]" aria-label={`${String(children)} (opens in a new tab)`}>{children}<ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0" /></a>;
+  return <a href={href} target="_blank" rel="noopener noreferrer" className="external-link focusable-surface" aria-label={`${String(children)} (opens in a new tab)`}>{children}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>;
 }
 
 function collectTags(items: LogsFeedItem[]) {

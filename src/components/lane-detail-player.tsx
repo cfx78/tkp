@@ -59,7 +59,7 @@ export function LaneDetailPlayer({ laneName, beats, description, accentColor }: 
               <MediaArtwork src={artwork} size="compact" />
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-[var(--text-primary)] sm:text-base">
-                  {beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="focusable-surface hover:text-[var(--accent)]">{beat.title}</Link> : beat.title}
+                  {beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="metadata-link focusable-surface">{beat.title}</Link> : beat.title}
                 </h3>
                 <p className="type-metadata mt-1 truncate">{statusLabels[beat.status || ''] || 'Beat'}{beat.publishedAt ? ` · ${formatDate(beat.publishedAt)}` : ''}</p>
                 {active ? <span className="type-protocol-label mt-1 block text-[9px]">Current · {loading ? 'Loading' : playing ? 'Playing' : 'Paused'}</span> : null}

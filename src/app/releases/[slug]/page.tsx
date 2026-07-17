@@ -51,7 +51,7 @@ export default async function ReleasePage({ params }: Props) {
   const beats = buildReleaseQueue(release.beats);
 
   return <main className="mx-auto w-full max-w-6xl pb-8">
-    <Link href="/player" className="focusable-surface inline-flex min-h-11 items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+    <Link href="/player" className="editorial-link focusable-surface">
       <ArrowLeft className="h-4 w-4" /> Back to Player
     </Link>
 
@@ -73,7 +73,7 @@ export default async function ReleasePage({ params }: Props) {
 
         <dl className="type-metadata mt-[var(--section-rhythm)] grid gap-y-3 border-y border-[var(--line-subtle)] py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-x-5">
           <dt className="text-[var(--text-muted)]">Playable tracks</dt><dd>{beats.length}</dd>
-          {release.lane?.name ? <><dt className="text-[var(--text-muted)]">Lane</dt><dd>{release.lane.slug ? <Link href={`/lanes/${release.lane.slug}`} className="focusable-surface hover:text-[var(--text-primary)]">{release.lane.name}</Link> : release.lane.name}</dd></> : null}
+          {release.lane?.name ? <><dt className="text-[var(--text-muted)]">Lane</dt><dd>{release.lane.slug ? <Link href={`/lanes/${release.lane.slug}`} className="metadata-link focusable-surface">{release.lane.name}</Link> : release.lane.name}</dd></> : null}
           {release.releaseType ? <><dt className="text-[var(--text-muted)]">Type</dt><dd>{release.releaseType}</dd></> : null}
           {release.publishedAt ? <><dt className="text-[var(--text-muted)]">Published</dt><dd>{formatDate(release.publishedAt)}</dd></> : null}
           {release.tags.length ? <><dt className="text-[var(--text-muted)]">Tags</dt><dd>{release.tags.map((tag) => tag.name).join(' / ')}</dd></> : null}

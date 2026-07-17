@@ -16,9 +16,9 @@ export function MiniPlayer() {
     <aside className="mini-player-shell shell-material fixed inset-x-0 bottom-[var(--mini-player-offset)] z-40 mx-auto max-w-xl border-x border-t px-1 pb-1 pt-1 sm:px-2" aria-label="Mini player">
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center">
         <div className="flex min-w-0 items-center gap-1.5">
-          {beat.slug ? <Link href={`/player/beats/${beat.slug}`} aria-label={`Open Beat File for ${beat.title}`} className="focusable-surface shrink-0">{artwork}</Link> : artwork}
+          {beat.slug ? <Link href={`/player/beats/${beat.slug}`} aria-label={`Open Beat File for ${beat.title}`} className="artwork-link focusable-surface shrink-0">{artwork}</Link> : artwork}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-[var(--text-primary)] sm:text-sm">{beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="focusable-surface">{beat.title}</Link> : beat.title}</p>
+            <p className="truncate text-xs font-semibold text-[var(--text-primary)] sm:text-sm">{beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="metadata-link focusable-surface">{beat.title}</Link> : beat.title}</p>
             <p className="type-metadata mt-0.5 truncate text-[9px] sm:text-[10px]">{isQueueComplete ? 'Queue complete' : beat.sourceType === 'version' ? `Context · ${beat.lane?.name || 'Unassigned lane'}` : beat.lane?.name || 'Unassigned lane'}</p>
           </div>
         </div>

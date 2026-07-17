@@ -260,6 +260,18 @@ input[type="range"]:focus-visible {
   .editorial-link:hover,
   .external-link:hover { border-color: var(--accent); color: var(--text-primary); }
   .url-metadata { max-width: 100%; overflow-wrap: anywhere; word-break: normal; }
+  .metadata-link { max-width: 100%; min-width: 0; color: inherit; line-height: inherit; text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: 0.22em; overflow-wrap: anywhere; }
+  .metadata-link:hover,
+  .metadata-link:focus-visible { color: var(--text-primary); text-decoration-color: currentColor; }
+  .text-cta { display: inline-flex; min-height: var(--touch-target); max-width: 100%; min-width: 0; align-items: center; gap: 0.45rem; padding-block: 0.4rem; color: var(--text-primary); font-size: var(--text-small-size); font-weight: 700; line-height: 1.35; text-decoration-line: underline; text-decoration-color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.32em; white-space: normal; }
+  .text-cta:hover { color: var(--accent); }
+  .editorial-link > svg,
+  .external-link > svg,
+  .text-cta > svg { flex-shrink: 0; }
+  .row-link { max-width: 100%; min-width: 0; border-radius: var(--radius-interactive); transition: color var(--motion-ui) var(--ease-ui), background-color var(--motion-ui) var(--ease-ui), box-shadow var(--motion-ui) var(--ease-ui); }
+  .row-link:hover { background: var(--surface-active); }
+  .artwork-link { display: block; max-width: 100%; min-width: 0; border-radius: var(--radius-artwork); }
+  .artwork-link:hover { filter: brightness(1.04); }
   .action-control { display: inline-flex; min-height: var(--touch-target); max-width: 100%; align-items: center; justify-content: center; gap: 0.55rem; border: 1px solid var(--line-subtle); border-radius: var(--radius-interactive); background: color-mix(in srgb, var(--bg-2) 72%, transparent); padding: 0.65rem 1rem; color: var(--text-primary); font-size: var(--text-small-size); font-weight: 600; line-height: 1.2; white-space: nowrap; }
   .action-control:hover { border-color: color-mix(in srgb, var(--accent) 58%, var(--line-subtle)); background: var(--surface-active); }
   .action-control:disabled { opacity: 0.35; }
