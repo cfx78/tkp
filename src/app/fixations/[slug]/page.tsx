@@ -86,17 +86,11 @@ export default async function FixationPage({ params }: Props) {
       <ArrowLeft className="h-4 w-4" /> Back to Fixations
     </Link>
 
-    <header className="relative mt-5 isolate overflow-hidden border-y border-[var(--line-subtle)] bg-[#070a11] sm:min-h-[34rem]">
-      {heroArtwork ? <div aria-hidden="true" className="absolute -right-[14%] -top-[16%] hidden h-[118%] w-[72%] opacity-[0.16] sm:block">
-        {/* Decorative echo of the authored Fixation artwork. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={heroArtwork} alt="" className="h-full w-full scale-110 object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#070a11]/35 to-[#070a11]" />
-      </div> : null}
+    <header className="relative mt-5 isolate overflow-hidden border-y border-[var(--line-subtle)] sm:min-h-[32rem]">
       <div className="relative grid gap-8 px-0 py-7 sm:grid-cols-[minmax(0,.9fr)_minmax(18rem,1.1fr)] sm:items-end sm:gap-10 sm:px-8 sm:py-10 lg:px-12">
         <div className="relative z-10 order-2 min-w-0 px-1 pb-2 sm:order-1 sm:px-0 sm:pb-4">
           <ProtocolLabel>{fixation.isCore ? 'Core Fixation' : statusLabel(fixation.status)}</ProtocolLabel>
-          <h1 className="mt-4 max-w-[8ch] break-words text-[clamp(2.75rem,13vw,7rem)] font-semibold leading-[0.88] tracking-[-0.06em] text-[var(--text-primary)] sm:max-w-3xl">{fixation.title}</h1>
+          <h1 className="mt-4 max-w-3xl break-words text-[clamp(2.75rem,10vw,5.5rem)] font-semibold leading-[0.94] tracking-[-0.05em] text-[var(--text-primary)]">{fixation.title}</h1>
           {fixation.shortDescription ? <p className="mt-6 max-w-xl text-[1.05rem] leading-8 text-[var(--text-secondary)] sm:text-lg">{fixation.shortDescription}</p> : null}
           {fixation.hasRabbitHoleItems ? <Link href={`/fixations/${fixation.slug}/rabbit-hole`} className="text-cta focusable-surface mt-7">Enter Rabbit Hole <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link> : null}
         </div>
@@ -155,7 +149,7 @@ function TrailEntry({ item, index, selected = false }: { item: TrailItem; index:
   return <article className={`grid min-w-0 gap-5 border-b border-[var(--line-subtle)] py-7 sm:py-9 ${image ? 'sm:grid-cols-[minmax(0,1fr)_minmax(10rem,.42fr)] sm:items-center' : index % 3 === 1 ? 'sm:pl-[9%]' : ''}`}>
     <div className="min-w-0">
       <div className="flex flex-wrap items-baseline gap-3"><ProtocolLabel className="text-[var(--text-muted)]">{selected ? 'Selected ' : ''}{trailLabel(item)}</ProtocolLabel><time className="type-numeric" dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time></div>
-      {item.kind === 'quote' ? <blockquote className="mt-4 max-w-[var(--reading-measure)]"><p className="break-words text-[clamp(1.3rem,4.5vw,2rem)] leading-[1.4] text-[var(--text-primary)]">{item.quoteText}</p><footer className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">&mdash; {item.person}{item.sourceTitle ? `, ${item.sourceTitle}` : ''}</footer></blockquote> : <><h3 className="mt-3 break-words text-xl font-semibold leading-snug text-[var(--text-primary)] sm:text-2xl">{destination ? destination.external ? <a href={destination.href} target="_blank" rel="noreferrer noopener" className="focusable-surface hover:text-[var(--accent)]">{title}</a> : <Link href={destination.href} className="focusable-surface hover:text-[var(--accent)]">{title}</Link> : title}</h3>{note ? <p className="type-reading mt-3 whitespace-pre-line">{note}</p> : null}</>}
+      {item.kind === 'quote' ? <blockquote className="mt-4 max-w-[var(--reading-measure)]"><p className="break-words text-[clamp(1.3rem,4.5vw,2rem)] leading-[1.4] text-[var(--text-primary)]">{item.quoteText}</p><footer className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">&mdash; {item.person}{item.sourceTitle ? `, ${item.sourceTitle}` : ''}</footer></blockquote> : <><h3 className="mt-3 break-words text-xl font-semibold leading-snug text-[var(--text-primary)] sm:text-2xl">{destination ? destination.external ? <a href={destination.href} target="_blank" rel="noreferrer noopener" className="metadata-link focusable-surface">{title}</a> : <Link href={destination.href} className="metadata-link focusable-surface">{title}</Link> : title}</h3>{note ? <p className="type-reading mt-3 whitespace-pre-line">{note}</p> : null}</>}
       <TrailActions item={item} />
     </div>
     {image ? <div className="order-first max-w-sm overflow-hidden bg-[var(--bg-2)] sm:order-last sm:max-w-none" style={{ aspectRatio: validAspectRatio(item.kind === 'link' ? item.thumbnailAspectRatio : undefined) }}>
@@ -179,7 +173,7 @@ function ExternalAction({ href, label }: { href: string; label: string }) {
 
 function MusicRow({ title, href, label, artwork }: { title: string; href: string; label: string; artwork?: string }) {
   return <article className="grid min-h-20 grid-cols-[minmax(0,1fr)_4rem] items-center gap-4 border-b border-[var(--line-subtle)] py-4">
-    <div className="min-w-0"><ProtocolLabel className="text-[var(--text-muted)]">{label}</ProtocolLabel><h3 className="mt-2 break-words font-semibold text-[var(--text-primary)]"><Link href={href} className="focusable-surface hover:text-[var(--accent)]">{title}</Link></h3></div>
+    <div className="min-w-0"><ProtocolLabel className="text-[var(--text-muted)]">{label}</ProtocolLabel><h3 className="mt-2 break-words font-semibold text-[var(--text-primary)]"><Link href={href} className="metadata-link focusable-surface">{title}</Link></h3></div>
     <div className="aspect-square overflow-hidden bg-[var(--bg-2)]">{artwork ? <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={artwork} alt="" loading="lazy" className="h-full w-full object-cover" />

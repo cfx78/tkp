@@ -43,7 +43,7 @@ export function RabbitHoleBrowser({ categories, pinnedItems, feedItems }: Rabbit
   return <>
     <fieldset className="mt-10 min-w-0 border-y border-[var(--line-subtle)] py-5">
       <legend className="type-protocol-label px-2 text-[var(--text-muted)]">Browse categories</legend>
-      <div className="-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+      <div className="flex max-w-full flex-wrap gap-2">
         <CategoryButton selected={selectedCategory === 'all'} onClick={() => selectCategory('all')}>All</CategoryButton>
         {categories.map((category) => <CategoryButton key={category.value} selected={selectedCategory === category.value} onClick={() => selectCategory(category.value)}>{category.label}</CategoryButton>)}
       </div>
@@ -63,20 +63,20 @@ export function RabbitHoleBrowser({ categories, pinnedItems, feedItems }: Rabbit
       <ol>{visibleFeed.map((item, index) => <li key={item.id}><RabbitHoleEntry item={item} index={index} previewOpen={openPreviews.has(item.id)} onTogglePreview={() => togglePreview(item.id)} /></li>)}</ol>
       {remaining ? <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--line-subtle)] py-4">
         <p className="type-metadata" aria-live="polite">{remaining} remaining</p>
-        <button type="button" onClick={() => setVisibleCount((count) => count + FEED_INCREMENT)} className="focusable-surface inline-flex min-h-11 items-center gap-2 border border-[var(--line-subtle)] px-4 text-sm font-semibold text-[var(--text-primary)] hover:border-[var(--accent)]"><Plus aria-hidden="true" className="h-4 w-4" />Load More</button>
+        <button type="button" onClick={() => setVisibleCount((count) => count + FEED_INCREMENT)} className="action-control focusable-surface"><Plus aria-hidden="true" className="h-4 w-4" />Load More</button>
       </div> : null}
     </section> : null}
 
     {!filteredPinned.length && !filteredFeed.length ? <section className="mt-[var(--section-rhythm)] border-y border-[var(--line-subtle)] py-10" aria-live="polite">
       <p className="type-protocol-label text-[var(--text-muted)]">No matching items</p>
       <p className="type-small mt-3">This category is quiet in the current archive.</p>
-      <button type="button" onClick={() => selectCategory('all')} className="focusable-surface mt-5 inline-flex min-h-11 items-center border-b border-[var(--accent)] px-1 text-sm font-semibold text-[var(--text-primary)]">Show all categories</button>
+      <button type="button" onClick={() => selectCategory('all')} className="action-control focusable-surface mt-5">Show all categories</button>
     </section> : null}
   </>;
 }
 
 function CategoryButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: React.ReactNode }) {
-  return <button type="button" aria-pressed={selected} onClick={onClick} className={`focusable-surface inline-flex min-h-11 shrink-0 items-center gap-2 border px-3 text-sm font-semibold ${selected ? 'border-[var(--accent)] bg-[var(--surface-active)] text-[var(--text-primary)]' : 'border-white/10 text-[var(--text-secondary)] hover:border-white/25 hover:text-[var(--text-primary)]'}`}><span aria-hidden="true" className="grid h-4 w-4 place-items-center border border-current">{selected ? <Check className="h-3 w-3" strokeWidth={2.5} /> : null}</span>{children}</button>;
+  return <button type="button" aria-pressed={selected} onClick={onClick} className={`focusable-surface inline-flex min-h-11 min-w-11 items-center gap-2 border px-3 text-sm font-semibold ${selected ? 'border-[var(--accent)] bg-[var(--surface-active)] text-[var(--text-primary)] shadow-[inset_0_-2px_0_var(--accent)]' : 'border-white/10 text-[var(--text-secondary)] hover:border-white/25 hover:text-[var(--text-primary)]'}`}><span aria-hidden="true" className="grid h-4 w-4 shrink-0 place-items-center border border-current">{selected ? <Check className="h-3 w-3" strokeWidth={2.5} /> : null}</span>{children}</button>;
 }
 
 function RabbitHoleEntry({ item, featured, index, previewOpen, onTogglePreview }: { item: RabbitHoleBrowserItem; featured?: boolean; index: number; previewOpen: boolean; onTogglePreview: () => void }) {
@@ -96,7 +96,7 @@ function RabbitHoleEntry({ item, featured, index, previewOpen, onTogglePreview }
       {item.note ? <p className="type-reading mt-4 whitespace-pre-line">{item.note}</p> : null}
       {!featured ? <div className="mt-6"><MediaPresentation item={item} previewId={previewId} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /></div> : null}
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-        {item.trustedEmbedUrl ? <button ref={previewActionRef} type="button" data-preview-action aria-controls={previewId} aria-expanded={previewOpen} onClick={onTogglePreview} className="focusable-surface inline-flex min-h-11 items-center border-b border-[var(--line-subtle)] px-1 text-sm font-semibold text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text-primary)]">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
+        {item.trustedEmbedUrl ? <button ref={previewActionRef} type="button" data-preview-action aria-controls={previewId} aria-expanded={previewOpen} onClick={onTogglePreview} className="action-control focusable-surface">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
         <a href={item.url} target="_blank" rel="noopener noreferrer" className="external-link focusable-surface" aria-label={`Open ${item.provider} in a new tab`}>Open {item.provider}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
       </div>
     </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -41,19 +42,11 @@ export default async function RabbitHolePage({ params }: Props) {
   const coverArtwork = rabbitHole.coverImage ? urlFor(rabbitHole.coverImage).width(1200).fit('max').auto('format').url() : undefined;
 
   return <main className="mx-auto w-full max-w-5xl overflow-x-clip pb-8">
-    <header className="relative isolate min-h-64 overflow-hidden border-y border-[var(--line-subtle)] py-9 sm:min-h-80 sm:py-12">
-      {coverArtwork ? <>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={coverArtwork} alt="" aria-hidden="true" className="absolute inset-y-0 right-0 -z-20 h-full w-[72%] object-cover object-center opacity-25 sm:w-[58%]" />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,var(--bg-0)_8%,rgba(5,7,11,.92)_38%,rgba(5,7,11,.45)_100%)]" />
-      </> : null}
-      <div className="relative max-w-3xl">
-        <ProtocolLabel>Rabbit Hole</ProtocolLabel>
-        <h1 className="mt-4 break-words text-[clamp(2.5rem,10vw,5rem)] font-semibold leading-[0.98] tracking-normal text-[var(--text-primary)]">{rabbitHole.title} Rabbit Hole</h1>
-        {rabbitHole.shortDescription ? <p className="type-reading mt-6 max-w-[var(--reading-measure)]">{rabbitHole.shortDescription}</p> : null}
-      </div>
+    <Link href={`/fixations/${rabbitHole.slug}`} className="editorial-link focusable-surface"><ArrowLeft aria-hidden="true" className="h-4 w-4" /> Back to {rabbitHole.title}</Link>
+    <header className="mt-5 grid gap-7 border-y border-[var(--line-subtle)] py-8 sm:grid-cols-[minmax(0,1fr)_minmax(15rem,.72fr)] sm:items-center sm:gap-10 sm:py-12">
+      <div className="min-w-0"><ProtocolLabel>Rabbit Hole</ProtocolLabel><h1 className="mt-4 break-words text-[clamp(2.5rem,9vw,4.75rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-[var(--text-primary)]">{rabbitHole.title} Rabbit Hole</h1>{rabbitHole.shortDescription ? <p className="type-reading mt-6">{rabbitHole.shortDescription}</p> : null}</div>
+      <div className="order-first overflow-hidden bg-[var(--bg-2)] sm:order-last" style={{ aspectRatio: rabbitHole.coverAspectRatio || 16 / 10 }}>{coverArtwork ? <img src={coverArtwork} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full min-h-48 place-items-center text-[var(--text-muted)]"><span className="type-metadata">Archive image unavailable</span></div>}</div>
     </header>
-    <Link href={`/fixations/${rabbitHole.slug}`} className="editorial-link focusable-surface mt-5"><ArrowLeft aria-hidden="true" className="h-4 w-4" /> Back to {rabbitHole.title}</Link>
     <RabbitHoleBrowser categories={rabbitHole.categories} pinnedItems={pinnedItems} feedItems={feedItems} />
   </main>;
 }
