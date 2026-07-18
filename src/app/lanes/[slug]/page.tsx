@@ -67,18 +67,18 @@ export default async function LanePage({ params }: Props) {
     <header className="mt-7 max-w-3xl">
       <ProtocolLabel>Lane</ProtocolLabel>
       <h1 className="mt-4 break-words text-4xl font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)] sm:text-5xl lg:text-6xl">{lane.name}</h1>
-      <div aria-hidden="true" className="mt-6 h-px w-full max-w-md" style={{ background: `linear-gradient(90deg, ${accentColor}, ${secondaryColor}, transparent)` }} />
+      <div aria-hidden="true" className="mt-6 flex items-center gap-2"><span className="h-1.5 w-8" style={{ backgroundColor: accentColor }} /><span className="h-px w-16" style={{ backgroundColor: secondaryColor }} /></div>
     </header>
 
-    <section className="mt-9 grid gap-10 md:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)] md:items-start md:gap-14 lg:gap-20">
+    <section className="mt-9 grid gap-10 lg:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-16 xl:gap-20">
       <div className="relative mx-auto w-full max-w-[34rem] md:mx-0">
-        <div aria-hidden="true" className="absolute inset-[14%] -z-10 blur-3xl" style={{ backgroundColor: accentColor, opacity: 0.18 }} />
+        <div aria-hidden="true" className="absolute inset-[18%] -z-10 blur-3xl" style={{ backgroundColor: accentColor, opacity: 0.1 }} />
         <div className="grid max-h-[38rem] w-full place-items-center overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)] shadow-[var(--artwork-bloom)]" style={{ aspectRatio: artworkRatio }}>
           {artwork ? <img src={artwork} alt={`${lane.name} Lane artwork`} className="h-full w-full object-contain" /> : <div className="grid h-full min-h-72 w-full place-items-center" role="img" aria-label={`${lane.name} Lane artwork unavailable`}><ListMusic className="h-16 w-16 text-white/15" /></div>}
         </div>
       </div>
 
-      <div className="min-w-0 md:pt-2">
+      <div className="min-w-0 lg:pt-2">
         <LaneDetailPlayer laneName={lane.name} beats={beats} description={lane.plainDescription} accentColor={accentColor} />
       </div>
     </section>
@@ -86,9 +86,9 @@ export default async function LanePage({ params }: Props) {
     {lane.releases.length ? <section className="mt-[var(--section-rhythm)]">
       <SectionHeading label="Curated from this sound" title="Related Releases" />
       <div className="mt-6 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">{lane.releases.map((release) => <article key={release._id} className="min-w-0">
-        <Link href={`/releases/${release.slug}`} aria-label={`Open release ${release.title}`}><MediaArtwork src={release.coverArtUrl} size="feature" className="w-full max-w-none shadow-none" /></Link>
+        <Link href={`/releases/${release.slug}`} className="artwork-link focusable-surface" aria-label={`Open release ${release.title}`}><MediaArtwork src={release.coverArtUrl} alt="" size="feature" className="w-full max-w-none shadow-none" /></Link>
         <ProtocolLabel className="mt-4 text-[var(--text-muted)]">{release.releaseType || 'Release'}</ProtocolLabel>
-        <h3 className="mt-2 truncate text-lg font-semibold text-[var(--text-primary)]"><Link href={`/releases/${release.slug}`} className="focusable-surface hover:text-[var(--accent)]">{release.title}</Link></h3>
+        <h3 className="mt-2 break-words text-lg font-semibold text-[var(--text-primary)]"><Link href={`/releases/${release.slug}`} className="editorial-link focusable-surface">{release.title}</Link></h3>
         {release.publishedAt ? <p className="type-numeric mt-2">{formatDate(release.publishedAt)}</p> : null}
       </article>)}</div>
     </section> : null}

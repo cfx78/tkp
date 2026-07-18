@@ -104,7 +104,7 @@ export function LogsBrowser({ items }: { items: LogsFeedItem[] }) {
 
       {filteredItems.length ? (
         <ol className="border-b border-[var(--line-subtle)]">
-          {filteredItems.map((item, index) => <li key={item.id}><FeedEntry item={item} index={index} onOpenReading={openReading} /></li>)}
+          {filteredItems.map((item) => <li key={item.id}><FeedEntry item={item} onOpenReading={openReading} /></li>)}
         </ol>
       ) : (
         <div className="border-b border-[var(--line-subtle)] py-12">
@@ -119,10 +119,9 @@ export function LogsBrowser({ items }: { items: LogsFeedItem[] }) {
   );
 }
 
-function FeedEntry({ item, index, onOpenReading }: { item: LogsFeedItem; index: number; onOpenReading: (log: LogFeedItem, opener: HTMLButtonElement) => void }) {
-  const offset = index % 4 === 2 ? 'sm:pl-[8%]' : index % 4 === 3 ? 'sm:pr-[5%]' : '';
+function FeedEntry({ item, onOpenReading }: { item: LogsFeedItem; onOpenReading: (log: LogFeedItem, opener: HTMLButtonElement) => void }) {
   return (
-    <article className={`grid gap-4 border-t border-[var(--line-subtle)] py-7 sm:grid-cols-[7.5rem_minmax(0,1fr)] sm:gap-8 sm:py-10 ${offset}`} aria-label={`${contentLabel(item.kind)} entry`}>
+    <article className="grid gap-4 border-t border-[var(--line-subtle)] py-7 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-8 sm:py-10" aria-label={`${contentLabel(item.kind)} entry`}>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 sm:block">
         <p className="type-protocol-label text-[var(--text-muted)]">{item.kind === 'log' ? logTypeLabels[item.logType] : contentLabel(item.kind)}</p>
         <time className="type-numeric sm:mt-2 sm:block" dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time>
@@ -239,14 +238,14 @@ function ReadingDialog({ log, onClose }: { log: LogFeedItem; onClose: () => void
   }, [onClose]);
 
   return createPortal(
-    <div className="fixed inset-0 z-[200] isolate overflow-hidden bg-[#030509] px-4 text-[var(--text-primary)]" role="presentation">
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="log-reading-title" aria-describedby={log.body ? 'log-reading-body' : undefined} className="mx-auto flex h-[100dvh] min-h-0 w-full max-w-3xl flex-col overflow-hidden bg-[#05070b]">
+    <div className="fixed inset-0 z-[200] isolate overflow-hidden bg-[#030509] text-[var(--text-primary)] sm:px-5" role="presentation">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="log-reading-title" aria-describedby={log.body ? 'log-reading-body' : undefined} className="mx-auto flex h-[100dvh] min-h-0 w-full max-w-3xl flex-col overflow-hidden bg-[#05070b] px-4 sm:px-8">
         <header className="relative z-10 flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-[var(--line-subtle)] bg-[#05070b] pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
           <p className="type-protocol-label">{logTypeLabels[log.logType]}</p>
           <button ref={closeRef} type="button" onClick={onClose} className="focusable-surface inline-flex min-h-11 items-center gap-2 px-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"><span>Close</span><X aria-hidden="true" className="h-5 w-5" /></button>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <article className="mx-auto max-w-[var(--reading-measure)] py-10 sm:py-16">
+          <article className="mx-auto w-full max-w-[var(--reading-measure)] py-9 sm:py-16">
             <time className="type-numeric" dateTime={log.publishedAt}>{formatDate(log.publishedAt)}</time>
             <h2 id="log-reading-title" className="mt-4 break-words text-[clamp(2rem,8vw,4.5rem)] font-semibold leading-[1.02] tracking-[-0.045em]">{log.title || logTypeLabels[log.logType]}</h2>
             {log.body ? <div id="log-reading-body" className="mt-8 space-y-5 text-[1.0625rem] leading-8 text-[var(--text-secondary)]">{paragraphs(log.body).map((paragraph, index) => <p key={`${index}-${paragraph.slice(0, 20)}`} className="whitespace-pre-line">{paragraph}</p>)}</div> : null}

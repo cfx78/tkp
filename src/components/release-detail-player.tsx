@@ -26,6 +26,8 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
   };
 
   return <>
+    {description ? <p className="type-reading mb-7">{description}</p> : null}
+
     <button
       type="button"
       onClick={playRelease}
@@ -36,8 +38,6 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
       {firstTrackIsLoading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" fill="currentColor" />}
       {beats.length ? 'Play Release' : 'Release unavailable'}
     </button>
-
-    {description ? <p className="type-reading mt-7">{description}</p> : null}
 
     <section className="mt-[var(--section-rhythm)]" aria-labelledby="release-tracks-heading">
       <ProtocolLabel>Manual sequence</ProtocolLabel>
@@ -55,10 +55,10 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
           return <li key={beat._id}>
             <article
               aria-current={active ? 'true' : undefined}
-              className={`grid min-w-0 grid-cols-[2rem_auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--line-subtle)] py-4 transition-colors duration-[var(--motion-ui)] ${active ? 'bg-[var(--surface-active)] shadow-[inset_2px_0_0_var(--accent)]' : ''}`}
+              className={`grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 border-b border-[var(--line-subtle)] py-4 transition-colors duration-[var(--motion-ui)] sm:grid-cols-[2rem_auto_minmax(0,1fr)_2.75rem] ${active ? 'bg-[var(--surface-active)] shadow-[inset_2px_0_0_var(--accent)]' : ''}`}
             >
               <span className="type-numeric text-center">{String(index + 1).padStart(2, '0')}</span>
-              <MediaArtwork src={artwork} size="compact" />
+              <MediaArtwork src={artwork} size="compact" className="hidden sm:block" />
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-[var(--text-primary)] sm:text-base">
                   {beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="metadata-link focusable-surface">{beat.title}</Link> : beat.title}

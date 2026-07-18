@@ -55,12 +55,7 @@ export default async function ReleasePage({ params }: Props) {
       <ArrowLeft className="h-4 w-4" /> Back to Player
     </Link>
 
-    <header className="mt-7 max-w-3xl">
-      <ProtocolLabel>{release.releaseType || 'Release'}</ProtocolLabel>
-      <h1 className="mt-4 break-words text-4xl font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)] sm:text-5xl lg:text-6xl">{release.title}</h1>
-    </header>
-
-    <section className="mt-9 grid gap-10 md:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1.1fr)] md:items-start md:gap-14 lg:gap-20">
+    <section className="mt-8 grid gap-9 lg:grid-cols-[minmax(20rem,0.95fr)_minmax(0,1.05fr)] lg:items-start lg:gap-16 xl:gap-20">
       <div className="relative mx-auto w-full max-w-[32rem] md:mx-0">
         <div aria-hidden="true" className="absolute inset-[13%] -z-10 bg-[var(--artwork-halo)] blur-3xl" />
         <div className="aspect-square overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)] shadow-[var(--artwork-bloom)]">
@@ -68,8 +63,14 @@ export default async function ReleasePage({ params }: Props) {
         </div>
       </div>
 
-      <div className="min-w-0 md:pt-2">
+      <div className="min-w-0 lg:pt-2">
+        <header className="max-w-3xl">
+          <ProtocolLabel>{release.releaseType || 'Release'}</ProtocolLabel>
+          <h1 className="mt-4 break-words text-4xl font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)] sm:text-5xl lg:text-6xl">{release.title}</h1>
+        </header>
+        <div className="mt-7">
         <ReleaseDetailPlayer releaseTitle={release.title} beats={beats} description={release.shortDescription} />
+        </div>
 
         <dl className="type-metadata mt-[var(--section-rhythm)] grid gap-y-3 border-y border-[var(--line-subtle)] py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-x-5">
           <dt className="text-[var(--text-muted)]">Playable tracks</dt><dd>{beats.length}</dd>

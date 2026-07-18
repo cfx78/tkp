@@ -52,11 +52,11 @@ export function LaneDetailPlayer({ laneName, beats, description, accentColor }: 
           return <li key={beat._id}>
             <article
               aria-current={active ? 'true' : undefined}
-              className={`grid min-w-0 grid-cols-[2rem_auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--line-subtle)] py-4 transition-colors duration-[var(--motion-ui)] ${active ? 'bg-white/[0.035]' : ''}`}
+              className={`grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 border-b border-[var(--line-subtle)] py-4 transition-colors duration-[var(--motion-ui)] sm:grid-cols-[2rem_auto_minmax(0,1fr)_2.75rem] ${active ? 'bg-white/[0.035]' : ''}`}
               style={{ boxShadow: active ? `inset 2px 0 0 ${accentColor}` : undefined }}
             >
               <span className="type-numeric text-center">{String(index + 1).padStart(2, '0')}</span>
-              <MediaArtwork src={artwork} size="compact" />
+              <MediaArtwork src={artwork} size="compact" className="hidden sm:block" />
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-[var(--text-primary)] sm:text-base">
                   {beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="metadata-link focusable-surface">{beat.title}</Link> : beat.title}
