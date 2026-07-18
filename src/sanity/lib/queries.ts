@@ -247,7 +247,7 @@ export const tagsQuery = groq`*[_type == "tag"] | order(group asc, name asc){
 }`;
 
 export const searchResultsQuery = groq`*[
-  _type in ["beat", "release", "lane", "link", "playlist", "quote", "fixation"] &&
+  _type in ["beat", "release", "lane", "log", "link", "playlist", "quote", "fixation"] &&
   nsfw != true &&
   !(_id in path("drafts.**")) &&
   (_type != "beat" || status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"])
@@ -258,6 +258,10 @@ export const searchResultsQuery = groq`*[
   name,
   quoteText,
   person,
+  sourceTitle,
+  body,
+  bullets,
+  logType,
   status,
   releaseType,
   plainDescription,
@@ -268,18 +272,18 @@ export const searchResultsQuery = groq`*[
   platformOverride,
   url,
   spotifyUrl,
+  spotifyEmbedUrl,
   appleMusicUrl,
   youtubeMusicUrl,
   sourceUrl,
-  publishedAt,
-  _createdAt,
+  "effectivePublishedAt": coalesce(publishedAt, _createdAt),
   "slug": slug.current,
   "imageUrl": coalesce(coverArt.asset->url, coverImage.asset->url, thumbnail.asset->url, fallbackCoverArt.asset->url),
   "tagIds": coalesce(tags[]._ref, []),
   "laneId": lane._ref,
   "relatedLaneIds": relatedLanes[]._ref,
   "fixationIds": relatedFixations[]._ref,
-  "releaseIds": releaseRefs[]._ref,
+  "releaseIds": coalesce(releaseRefs[]._ref, []) + coalesce(relatedReleases[]._ref, []),
   "containingReleaseIds": *[_type == "release" && references(^._id)]._id
 }`;
 
