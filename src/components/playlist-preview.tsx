@@ -2,17 +2,20 @@
 
 import { useId, useState } from 'react';
 import { getPlaylistPreviewOptions, type PlaylistPreviewOption, type PlaylistPreviewProvider, type PlaylistPreviewSources } from '@/src/lib/playlist-preview';
+import { useSensitiveAction, type SensitiveIdentity } from './content-warning-action';
 
 type PlaylistPreviewProps = PlaylistPreviewSources & {
   title: string;
   className?: string;
+  sensitiveIdentity?: SensitiveIdentity;
 };
 
-export function PlaylistPreview({ title, className = '', ...sources }: PlaylistPreviewProps) {
+export function PlaylistPreview({ title, className = '', sensitiveIdentity, ...sources }: PlaylistPreviewProps) {
   const options = getPlaylistPreviewOptions(sources);
   const [selectedProvider, setSelectedProvider] = useState<PlaylistPreviewProvider | undefined>(options[0]?.provider);
   const [previewOpen, setPreviewOpen] = useState(false);
   const previewId = useId();
+  const { run } = useSensitiveAction(sensitiveIdentity || { id: 'ordinary', type: 'playlist' }, 'load this preview');
   const selected = options.find((option) => option.provider === selectedProvider) || options[0];
 
   if (!selected) return null;
@@ -28,7 +31,7 @@ export function PlaylistPreview({ title, className = '', ...sources }: PlaylistP
       {options.map((option) => <button key={option.provider} type="button" aria-pressed={selected.provider === option.provider} onClick={() => selectProvider(option.provider)} className={`focusable-surface inline-flex min-h-11 items-center border-b px-1 text-sm font-semibold ${selected.provider === option.provider ? 'border-[var(--accent)] text-[var(--text-primary)]' : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--line-subtle)] hover:text-[var(--text-primary)]'}`}>{option.label}</button>)}
       </div>
     </div> : null}
-    <button type="button" aria-controls={previewId} aria-expanded={previewOpen} onClick={() => setPreviewOpen((open) => !open)} className="action-control focusable-surface mt-4">{previewOpen ? 'Close Preview' : `Load ${selected.label} Preview`}</button>
+    <button type="button" aria-controls={previewId} aria-expanded={previewOpen} onClick={() => previewOpen ? setPreviewOpen(false) : void run(() => setPreviewOpen(true))} className="action-control focusable-surface mt-4">{previewOpen ? 'Close Preview' : `Load ${selected.label} Preview`}</button>
     {previewOpen ? <div id={previewId} role="region" aria-label={`${title} ${selected.label} preview`} className="mt-3 w-full overflow-hidden"><ProviderIframe key={selected.provider} title={title} option={selected} /></div> : null}
   </div>;
 }

@@ -8,10 +8,11 @@ import { youtubePlaylistProviderLabel } from '@/src/lib/youtube-playlist';
 import { fetchSanity } from '@/src/sanity/lib/content';
 import { urlFor } from '@/src/sanity/lib/image';
 import { fixationDetailQuery } from '@/src/sanity/lib/queries';
+import { SensitiveNavigationBoundary, SensitivePageReveal, SensitiveReveal, SensitiveRevealButton } from '@/src/components/content-warning-action';
 
 type Props = { params: Promise<{ slug: string }> };
 type Tag = { _id: string; name: string; slug?: string; group?: string };
-type TrailBase = { _id: string; kind: 'log' | 'link' | 'playlist' | 'quote'; publishedAt: string };
+type TrailBase = { _id: string; kind: 'log' | 'link' | 'playlist' | 'quote'; publishedAt: string; nsfw?: boolean; nsfwReason?: string };
 type TrailLog = TrailBase & { kind: 'log'; title?: string; body?: string; bullets?: string[]; logType?: string };
 type TrailLink = TrailBase & { kind: 'link'; title?: string; url?: string; note?: string; platformAuto?: string; platformOverride?: string; thumbnail?: SanityImageSource; thumbnailAspectRatio?: number };
 type TrailPlaylist = TrailBase & { kind: 'playlist'; title?: string; shortNote?: string; spotifyUrl?: string; appleMusicUrl?: string; youtubeMusicUrl?: string };
@@ -27,6 +28,8 @@ type FixationDetail = {
   whyThisMatters?: string;
   status?: 'active' | 'sleeping' | 'archived';
   isCore?: boolean;
+  nsfw?: boolean;
+  nsfwReason?: string;
   coverImage?: SanityImageSource;
   coverAspectRatio?: number;
   tags: Tag[];
@@ -54,8 +57,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const fixation = await getFixation(slug);
   if (!fixation) return { title: 'Fixation Not Found | The Kitsune Protocol' };
-  const artwork = imageUrl(fixation.coverImage, 1200);
-  const description = fixation.shortDescription || fixation.whyThisMatters || `${fixation.title}, a Fixation from The Kitsune Protocol.`;
+  const artwork = fixation.nsfw ? undefined : imageUrl(fixation.coverImage, 1200);
+  const description = fixation.nsfw ? `${fixation.title}, a sensitive Fixation from The Kitsune Protocol.` : fixation.shortDescription || fixation.whyThisMatters || `${fixation.title}, a Fixation from The Kitsune Protocol.`;
   return {
     title: `${fixation.title} | The Kitsune Protocol`,
     description,
@@ -81,7 +84,8 @@ export default async function FixationPage({ params }: Props) {
   const releases = appendUnique(fixation.relatedReleases.filter(isRelatedRelease), fixation.recentReleases.filter(isRelatedRelease));
   const hasRelated = pinned.length > 0 || recent.length > 0 || beats.length > 0 || releases.length > 0;
 
-  return <main className="mx-auto w-full max-w-6xl overflow-x-clip pb-8">
+  const identity = { id: fixation._id, type: 'fixation' as const, nsfw: fixation.nsfw, nsfwReason: fixation.nsfwReason, title: fixation.title };
+  return <SensitivePageReveal identity={identity}><main className="mx-auto w-full max-w-6xl overflow-x-clip pb-8">
     <Link href="/fixations" className="editorial-link focusable-surface">
       <ArrowLeft className="h-4 w-4" /> Back to Fixations
     </Link>
@@ -138,7 +142,7 @@ export default async function FixationPage({ params }: Props) {
         {fixation.tags.length ? <><dt className="text-[var(--text-muted)]">Tags</dt><dd>{fixation.tags.map((tag) => tag.name).join(' / ')}</dd></> : null}
       </dl>
     </footer>
-  </main>;
+  </main></SensitivePageReveal>;
 }
 
 function TrailEntry({ item, index, selected = false }: { item: TrailItem; index: number; selected?: boolean }) {
@@ -146,17 +150,19 @@ function TrailEntry({ item, index, selected = false }: { item: TrailItem; index:
   const destination = trailDestination(item);
   const title = trailTitle(item);
   const note = trailNote(item);
-  return <article className={`grid min-w-0 gap-5 border-b border-[var(--line-subtle)] py-7 sm:py-9 ${image ? 'sm:grid-cols-[minmax(0,1fr)_minmax(10rem,.42fr)] sm:items-center' : index % 3 === 1 ? 'sm:pl-[9%]' : ''}`}>
+  const type = item.kind === 'link' ? 'link' : item.kind === 'playlist' ? 'playlist' : item.kind === 'quote' ? 'quote' : 'log';
+  const identity = { id: item._id, type, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.kind === 'quote' ? 'Quote' : item.title } as const;
+  return <SensitiveNavigationBoundary identity={identity}><article className={`grid min-w-0 gap-5 border-b border-[var(--line-subtle)] py-7 sm:py-9 ${image ? 'sm:grid-cols-[minmax(0,1fr)_minmax(10rem,.42fr)] sm:items-center' : index % 3 === 1 ? 'sm:pl-[9%]' : ''}`}>
     <div className="min-w-0">
       <div className="flex flex-wrap items-baseline gap-3"><ProtocolLabel className="text-[var(--text-muted)]">{selected ? 'Selected ' : ''}{trailLabel(item)}</ProtocolLabel><time className="type-numeric" dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time></div>
-      {item.kind === 'quote' ? <blockquote className="mt-4 max-w-[var(--reading-measure)]"><p className="break-words text-[clamp(1.3rem,4.5vw,2rem)] leading-[1.4] text-[var(--text-primary)]">{item.quoteText}</p><footer className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">&mdash; {item.person}{item.sourceTitle ? `, ${item.sourceTitle}` : ''}</footer></blockquote> : <><h3 className="mt-3 break-words text-xl font-semibold leading-snug text-[var(--text-primary)] sm:text-2xl">{destination ? destination.external ? <a href={destination.href} target="_blank" rel="noreferrer noopener" className="metadata-link focusable-surface">{title}</a> : <Link href={destination.href} className="metadata-link focusable-surface">{title}</Link> : title}</h3>{note ? <p className="type-reading mt-3 whitespace-pre-line">{note}</p> : null}</>}
-      <TrailActions item={item} />
+      <SensitiveReveal identity={identity}>{item.kind === 'quote' ? <blockquote className="mt-4 max-w-[var(--reading-measure)]"><p className="break-words text-[clamp(1.3rem,4.5vw,2rem)] leading-[1.4] text-[var(--text-primary)]">{item.quoteText}</p><footer className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">&mdash; {item.person}{item.sourceTitle ? `, ${item.sourceTitle}` : ''}</footer></blockquote> : <><h3 className="mt-3 break-words text-xl font-semibold leading-snug text-[var(--text-primary)] sm:text-2xl">{destination ? destination.external ? <a href={destination.href} target="_blank" rel="noreferrer noopener" className="metadata-link focusable-surface">{title}</a> : <Link href={destination.href} className="metadata-link focusable-surface">{title}</Link> : title}</h3>{note ? <p className="type-reading mt-3 whitespace-pre-line">{note}</p> : null}</>}<TrailActions item={item} /></SensitiveReveal>
+      <SensitiveRevealButton identity={identity} />
     </div>
-    {image ? <div className="order-first max-w-sm overflow-hidden bg-[var(--bg-2)] sm:order-last sm:max-w-none" style={{ aspectRatio: validAspectRatio(item.kind === 'link' ? item.thumbnailAspectRatio : undefined) }}>
+    <SensitiveReveal identity={identity}>{image ? <div className="order-first max-w-sm overflow-hidden bg-[var(--bg-2)] sm:order-last sm:max-w-none" style={{ aspectRatio: validAspectRatio(item.kind === 'link' ? item.thumbnailAspectRatio : undefined) }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image} alt="" loading="lazy" className="h-full w-full object-cover" />
-    </div> : null}
-  </article>;
+    </div> : null}</SensitiveReveal>
+  </article></SensitiveNavigationBoundary>;
 }
 
 function TrailActions({ item }: { item: TrailItem }) {

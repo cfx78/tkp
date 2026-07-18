@@ -26,6 +26,7 @@ export type FixationSummary = {
   status?: 'active' | 'sleeping' | 'archived';
   isCore?: boolean;
   nsfw?: boolean;
+  nsfwReason?: string;
   coverImage?: ImageValue;
 };
 

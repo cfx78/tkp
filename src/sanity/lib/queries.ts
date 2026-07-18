@@ -60,11 +60,11 @@ export const beatFileQuery = groq`*[_type == "beat" && slug.current == $slug && 
     _id, title, "slug": slug.current, releaseType, "coverArtUrl": coverArt.asset->url
   },
   "tags": coalesce(tags[]->{name, "slug": slug.current, group}, []),
-  "relatedFixations": coalesce(relatedFixations[]->{_id, title, "slug": slug.current, shortDescription}, []),
-  "relatedLogs": coalesce(relatedLogs[]->{_id, title, body, bullets, logType, publishedAt}, []),
-  "relatedLinks": coalesce(relatedLinks[]->{_id, title, url, platformAuto, platformOverride, note}, []),
-  "relatedPlaylists": coalesce(relatedPlaylists[]->{_id, title, "slug": slug.current, spotifyUrl, spotifyEmbedUrl, appleMusicUrl, youtubeMusicUrl, shortNote}, []),
-  "relatedQuotes": coalesce(relatedQuotes[]->{_id, quoteText, person, sourceTitle, sourceUrl}, []),
+  "relatedFixations": coalesce((relatedFixations[]->)[nsfw != true && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current, shortDescription}, []),
+  "relatedLogs": coalesce((relatedLogs[]->)[nsfw != true && !(_id in path("drafts.**"))]{_id, title, body, bullets, logType, publishedAt}, []),
+  "relatedLinks": coalesce((relatedLinks[]->)[nsfw != true && !(_id in path("drafts.**"))]{_id, title, url, platformAuto, platformOverride, note}, []),
+  "relatedPlaylists": coalesce((relatedPlaylists[]->)[nsfw != true && !(_id in path("drafts.**"))]{_id, title, "slug": slug.current, spotifyUrl, spotifyEmbedUrl, appleMusicUrl, youtubeMusicUrl, shortNote}, []),
+  "relatedQuotes": coalesce((relatedQuotes[]->)[nsfw != true && !(_id in path("drafts.**"))]{_id, quoteText, person, sourceTitle, sourceUrl}, []),
   "versions": coalesce(versions[]{_key, title, note, versionType, createdAt, nsfw, nsfwReason, "audioAvailable": defined(audioObjectKey)}, [])
 }`;
 
@@ -89,9 +89,9 @@ export const lanesQuery = groq`*[_type == "lane"] | order(sortOrder asc, name as
   fallbackCoverArt${imageProjection}, "coverArtUrl": fallbackCoverArt.asset->url
 }`;
 
-export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(coalesce(publishedAt, _createdAt) desc){
-  _id, title, "slug": slug.current, releaseType, shortDescription, publishedAt,
-  coverArt${imageProjection}, "coverArtUrl": coverArt.asset->url,
+export const releasesQuery = groq`*[_type == "release" && !(_id in path("drafts.**"))] | order(coalesce(publishedAt, _createdAt) desc){
+  _id, title, "slug": slug.current, releaseType, "shortDescription": select(nsfw != true => shortDescription), publishedAt, nsfw, nsfwReason,
+  coverArt, "coverArtUrl": select(nsfw != true => coverArt.asset->url),
   lane->{_id, name, "slug": slug.current},
   "beats": beats[]->{
     _id,
@@ -175,11 +175,12 @@ export const releaseDetailQuery = groq`*[
   _type == "release" &&
   slug.current == $slug &&
   defined(slug.current) &&
-  nsfw != true &&
   !(_id in path("drafts.**"))
 ][0]{
   _id,
   title,
+  nsfw,
+  nsfwReason,
   "slug": slug.current,
   coverArt,
   releaseType,
@@ -207,11 +208,12 @@ export const releaseDetailQuery = groq`*[
 
 export const logsFeedQuery = groq`*[
   _type in ["log", "link", "playlist", "quote"] &&
-  nsfw != true &&
   !(_id in path("drafts.**"))
 ] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...120]{
   _id,
   _type,
+  nsfw,
+  nsfwReason,
   "publishedAt": coalesce(publishedAt, _createdAt),
   "tags": coalesce(tags[]->{_id, name, "slug": slug.current, group}, []),
   _type == "log" => {
@@ -249,8 +251,8 @@ export const logsFeedQuery = groq`*[
   }
 }`;
 
-export const fixationsQuery = groq`*[_type == "fixation" && nsfw != true && defined(slug.current) && !(_id in path("drafts.**"))] | order(isCore desc, status asc, title asc){
-  _id, title, "slug": slug.current, shortDescription, whyThisMatters, status, isCore,
+export const fixationsQuery = groq`*[_type == "fixation" && defined(slug.current) && !(_id in path("drafts.**"))] | order(isCore desc, status asc, title asc){
+  _id, title, "slug": slug.current, "shortDescription": select(nsfw != true => shortDescription), "whyThisMatters": select(nsfw != true => whyThisMatters), status, isCore, nsfw, nsfwReason,
   coverImage${imageProjection}
 }`;
 
@@ -260,12 +262,13 @@ export const tagsQuery = groq`*[_type == "tag"] | order(group asc, name asc){
 
 export const searchResultsQuery = groq`*[
   _type in ["beat", "release", "lane", "log", "link", "playlist", "quote", "fixation"] &&
-  nsfw != true &&
   !(_id in path("drafts.**")) &&
   (_type != "beat" || status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"])
 ] | order(coalesce(publishedAt, _createdAt) desc){
   _id,
   _type,
+  nsfw,
+  nsfwReason,
   title,
   name,
   quoteText,
@@ -303,11 +306,12 @@ export const fixationDetailQuery = groq`*[
   _type == "fixation" &&
   slug.current == $slug &&
   defined(slug.current) &&
-  nsfw != true &&
   !(_id in path("drafts.**"))
 ][0]{
   _id,
   title,
+  nsfw,
+  nsfwReason,
   "slug": slug.current,
   shortDescription,
   whyThisMatters,
@@ -369,11 +373,12 @@ export const rabbitHoleQuery = groq`*[
   _type == "fixation" &&
   slug.current == $slug &&
   defined(slug.current) &&
-  nsfw != true &&
   !(_id in path("drafts.**"))
 ][0]{
   _id,
   title,
+  nsfw,
+  nsfwReason,
   "slug": slug.current,
   shortDescription,
   coverImage,
@@ -383,12 +388,11 @@ export const rabbitHoleQuery = groq`*[
     _type == "link" &&
     _id in ^.pinnedLinks[]._ref &&
     isRabbitHoleItem == true &&
-    nsfw != true &&
     references(^._id) &&
     (url match "http://*" || url match "https://*") &&
     !(_id in path("drafts.**"))
   ]{
-    _id, title, url, note, thumbnail, embedUrl, platformAuto, platformOverride, isPinnedInRabbitHole,
+    _id, title, url, note, thumbnail, embedUrl, platformAuto, platformOverride, isPinnedInRabbitHole, nsfw, nsfwReason,
     "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio,
     "category": rabbitHoleCategory->{_id, name, "slug": slug.current, group},
     "effectivePublishedAt": coalesce(publishedAt, _createdAt)
@@ -396,12 +400,11 @@ export const rabbitHoleQuery = groq`*[
   "links": *[
     _type == "link" &&
     isRabbitHoleItem == true &&
-    nsfw != true &&
     references(^._id) &&
     (url match "http://*" || url match "https://*") &&
     !(_id in path("drafts.**"))
   ] | order(coalesce(publishedAt, _createdAt) desc, _id asc)[0...100]{
-    _id, title, url, note, thumbnail, embedUrl, platformAuto, platformOverride, isPinnedInRabbitHole,
+    _id, title, url, note, thumbnail, embedUrl, platformAuto, platformOverride, isPinnedInRabbitHole, nsfw, nsfwReason,
     "thumbnailAspectRatio": thumbnail.asset->metadata.dimensions.aspectRatio,
     "category": rabbitHoleCategory->{_id, name, "slug": slug.current, group},
     "effectivePublishedAt": coalesce(publishedAt, _createdAt)

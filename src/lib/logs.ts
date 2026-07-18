@@ -31,6 +31,8 @@ export type RawLogsFeedItem = {
   sourceTitle?: string;
   sourceUrl?: string;
   foundViaLink?: { title?: string; url?: string };
+  nsfw?: boolean;
+  nsfwReason?: string;
 };
 
 const logTypes = new Set<LogType>(['thought', 'lifeUpdate', 'beatNote', 'fixationNote', 'movieThought', 'quickList']);
@@ -38,7 +40,7 @@ const logTypes = new Set<LogType>(['thought', 'lifeUpdate', 'beatNote', 'fixatio
 export function normalizeLogsFeed(items: RawLogsFeedItem[]): LogsFeedItem[] {
   return items.flatMap<LogsFeedItem>((item) => {
     if (!item._id || !item.publishedAt) return [];
-    const base = { id: item._id, publishedAt: item.publishedAt, tags: normalizeTags(item.tags) };
+    const base = { id: item._id, publishedAt: item.publishedAt, tags: normalizeTags(item.tags), nsfw: item.nsfw === true, nsfwReason: cleanText(item.nsfwReason) };
 
     if (item._type === 'log' && isLogType(item.logType)) {
       return [{

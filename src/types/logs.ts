@@ -11,6 +11,8 @@ type FeedBase = {
   id: string;
   publishedAt: string;
   tags: LogsTag[];
+  nsfw?: boolean;
+  nsfwReason?: string;
 };
 
 export type RelatedArchiveItem = {

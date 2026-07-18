@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { usePathname } from 'next/navigation';
 import { contentApprovalKey, readContentApproval, subscribeContentApproval, warningLabel, writeContentApproval, type ContentWarningRequest, type ContentWarningType } from '@/src/lib/content-warning';
 
 type WarningContextValue = { requestContentWarning: (request: ContentWarningRequest) => Promise<boolean> };
@@ -10,6 +11,7 @@ type PendingWarning = { request: ContentWarningRequest; resolve: (approved: bool
 const WarningContext = createContext<WarningContextValue | null>(null);
 
 export function ContentWarningProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [pending, setPending] = useState<PendingWarning | null>(null);
   const pendingRef = useRef<PendingWarning | null>(null);
 
@@ -35,6 +37,7 @@ export function ContentWarningProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => () => { pendingRef.current?.resolve(false); pendingRef.current = null; }, []);
+  useEffect(() => { const current = pendingRef.current; if (current) { pendingRef.current = null; setPending(null); current.resolve(false); } }, [pathname]);
 
   return <WarningContext.Provider value={{ requestContentWarning }}>{children}{pending ? <ContentWarningDialog pending={pending} onContinue={() => finish(true)} onCancel={() => finish(false)} /> : null}</WarningContext.Provider>;
 }

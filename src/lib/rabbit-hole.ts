@@ -22,6 +22,8 @@ type RawRabbitHoleLink = {
   category?: RawCategory;
   isPinnedInRabbitHole?: boolean;
   effectivePublishedAt?: string;
+  nsfw?: boolean;
+  nsfwReason?: string;
 } | null;
 
 export type RawRabbitHoleData = {
@@ -31,6 +33,8 @@ export type RawRabbitHoleData = {
   shortDescription?: string;
   coverImage?: SanityImageSource;
   coverAspectRatio?: number;
+  nsfw?: boolean;
+  nsfwReason?: string;
   pinnedLinkIds?: Array<string | null>;
   directPinnedLinks?: RawRabbitHoleLink[];
   links?: RawRabbitHoleLink[];
@@ -57,6 +61,8 @@ export type RabbitHoleItem = {
   trustedEmbedProvider?: 'YouTube' | 'Spotify';
   pinnedSource?: 'fixation' | 'link';
   pinnedOrder?: number;
+  nsfw?: boolean;
+  nsfwReason?: string;
 };
 
 export type RabbitHoleData = {
@@ -69,6 +75,8 @@ export type RabbitHoleData = {
   pinnedItems: RabbitHoleItem[];
   feedItems: RabbitHoleItem[];
   categories: RabbitHoleCategory[];
+  nsfw?: boolean;
+  nsfwReason?: string;
 };
 
 const supportedPlatforms = ['YouTube', 'Instagram', 'TikTok', 'X/Twitter', 'Spotify', 'Apple Music', 'YouTube Music', 'Letterboxd', 'Website/Article', 'Other'] as const;
@@ -111,6 +119,8 @@ export function normalizeRabbitHole(raw: RawRabbitHoleData): RabbitHoleData | nu
     pinnedItems: [...pinnedItems, ...otherPinned],
     feedItems,
     categories,
+    nsfw: raw.nsfw === true,
+    nsfwReason: cleanText(raw.nsfwReason),
   };
 }
 
@@ -134,6 +144,8 @@ function normalizeItem(raw: RawRabbitHoleLink): RabbitHoleItem | null {
     thumbnailAspectRatio: validAspectRatio(raw.thumbnailAspectRatio),
     trustedEmbedUrl,
     trustedEmbedProvider: youtubeEmbedUrl ? 'YouTube' : spotifyEmbedUrl ? 'Spotify' : undefined,
+    nsfw: raw.nsfw === true,
+    nsfwReason: cleanText(raw.nsfwReason),
   };
 }
 

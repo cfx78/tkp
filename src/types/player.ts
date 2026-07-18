@@ -41,6 +41,9 @@ export type PlayerRelease = {
   slug?: string;
   releaseType?: string;
   coverArtUrl?: string;
+  coverArt?: { _type?: string; asset?: { _type?: string; _ref?: string } };
+  nsfw?: boolean;
+  nsfwReason?: string;
   beats: PlayerBeat[];
 };
 

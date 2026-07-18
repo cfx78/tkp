@@ -4,6 +4,7 @@ import { ArrowUpRight, ImageIcon } from 'lucide-react';
 import { ProtocolLabel, SectionHeading } from '@/src/components/presentation-primitives';
 import { fetchSanity, type FixationSummary } from '@/src/sanity/lib/content';
 import { fixationsQuery } from '@/src/sanity/lib/queries';
+import { SensitiveNavigationBoundary, SensitiveReveal } from '@/src/components/content-warning-action';
 
 type Group = { key: 'core' | 'active' | 'sleeping' | 'archived'; label: string; title: string; description: string; items: FixationSummary[] };
 
@@ -39,16 +40,18 @@ function FixationGroup({ group }: { group: Group }) {
 function LeadFixation({ fixation, status }: { fixation: FixationSummary; status: string }) {
   if (!fixation.slug) return null;
   const artwork = fixation.coverImage?.asset?.url;
-  return <article className="grid gap-7 border-b border-[var(--line-subtle)] py-8 sm:grid-cols-[minmax(15rem,.9fr)_minmax(0,1.1fr)] sm:items-center sm:gap-12 sm:py-12">
-    <Link href={`/fixations/${fixation.slug}`} className="artwork-link focusable-surface relative aspect-[16/10] overflow-hidden bg-[var(--bg-2)]" aria-label={`Open ${fixation.title} Fixation`}>{artwork ? <img src={artwork} alt="" className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center"><ImageIcon aria-hidden="true" className="h-12 w-12 text-white/15" /></span>}</Link>
+  const identity = { id: fixation._id, type: 'fixation' as const, nsfw: fixation.nsfw, nsfwReason: fixation.nsfwReason, title: fixation.title };
+  return <SensitiveNavigationBoundary identity={identity}><article className="grid gap-7 border-b border-[var(--line-subtle)] py-8 sm:grid-cols-[minmax(15rem,.9fr)_minmax(0,1.1fr)] sm:items-center sm:gap-12 sm:py-12">
+    <Link href={`/fixations/${fixation.slug}`} className="artwork-link focusable-surface relative aspect-[16/10] overflow-hidden bg-[var(--bg-2)]" aria-label={`Open ${fixation.title} Fixation`}><SensitiveReveal identity={identity} fallback={<span className="grid h-full place-items-center"><ImageIcon aria-hidden="true" className="h-12 w-12 text-white/15" /></span>}>{artwork ? <img src={artwork} alt="" className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center"><ImageIcon aria-hidden="true" className="h-12 w-12 text-white/15" /></span>}</SensitiveReveal></Link>
     <div className="min-w-0"><ProtocolLabel>{fixation.isCore ? 'Core Fixation' : status}</ProtocolLabel><h2 className="mt-4 break-words text-3xl font-semibold leading-tight tracking-[-0.03em] text-[var(--text-primary)] sm:text-4xl"><Link href={`/fixations/${fixation.slug}`} className="metadata-link focusable-surface">{fixation.title}</Link></h2>{fixation.shortDescription ? <p className="type-reading mt-4">{fixation.shortDescription}</p> : null}<Link href={`/fixations/${fixation.slug}`} className="text-cta focusable-surface mt-6">Open Fixation <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link></div>
-  </article>;
+  </article></SensitiveNavigationBoundary>;
 }
 
 function SecondaryFixation({ fixation, index, status }: { fixation: FixationSummary; index: number; status: string }) {
   if (!fixation.slug) return null;
   const artwork = fixation.coverImage?.asset?.url;
-  return <article className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_3.5rem] items-center gap-3 py-5 sm:grid-cols-[3rem_minmax(0,1fr)_5rem] sm:gap-5">
-    <span className="type-numeric">{String(index).padStart(2, '0')}</span><div className="min-w-0"><ProtocolLabel className="text-[var(--text-muted)]">{fixation.isCore ? 'Core Fixation' : status}</ProtocolLabel><h3 className="mt-2 break-words text-xl font-semibold text-[var(--text-primary)]"><Link href={`/fixations/${fixation.slug}`} className="metadata-link focusable-surface">{fixation.title}</Link></h3>{fixation.shortDescription ? <p className="type-small mt-2 line-clamp-2 max-w-2xl">{fixation.shortDescription}</p> : null}</div><Link href={`/fixations/${fixation.slug}`} className="artwork-link focusable-surface aspect-square overflow-hidden bg-[var(--bg-2)]" aria-label={`Open ${fixation.title} Fixation`}>{artwork ? <img src={artwork} alt="" loading="lazy" className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center"><ImageIcon aria-hidden="true" className="h-5 w-5 text-white/15" /></span>}</Link>
-  </article>;
+  const identity = { id: fixation._id, type: 'fixation' as const, nsfw: fixation.nsfw, nsfwReason: fixation.nsfwReason, title: fixation.title };
+  return <SensitiveNavigationBoundary identity={identity}><article className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)_3.5rem] items-center gap-3 py-5 sm:grid-cols-[3rem_minmax(0,1fr)_5rem] sm:gap-5">
+    <span className="type-numeric">{String(index).padStart(2, '0')}</span><div className="min-w-0"><ProtocolLabel className="text-[var(--text-muted)]">{fixation.isCore ? 'Core Fixation' : status}</ProtocolLabel><h3 className="mt-2 break-words text-xl font-semibold text-[var(--text-primary)]"><Link href={`/fixations/${fixation.slug}`} className="metadata-link focusable-surface">{fixation.title}</Link></h3>{fixation.shortDescription ? <p className="type-small mt-2 line-clamp-2 max-w-2xl">{fixation.shortDescription}</p> : null}</div><Link href={`/fixations/${fixation.slug}`} className="artwork-link focusable-surface aspect-square overflow-hidden bg-[var(--bg-2)]" aria-label={`Open ${fixation.title} Fixation`}><SensitiveReveal identity={identity} fallback={<span className="grid h-full place-items-center"><ImageIcon aria-hidden="true" className="h-5 w-5 text-white/15" /></span>}>{artwork ? <img src={artwork} alt="" loading="lazy" className="h-full w-full object-cover" /> : <span className="grid h-full place-items-center"><ImageIcon aria-hidden="true" className="h-5 w-5 text-white/15" /></span>}</SensitiveReveal></Link>
+  </article></SensitiveNavigationBoundary>;
 }

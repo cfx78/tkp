@@ -1,7 +1,7 @@
 export const CONTENT_APPROVAL_VALUE = 'v1';
 export const CONTENT_APPROVAL_EVENT = 'kp-content-approval-change';
 
-export const contentWarningTypes = ['beat', 'version', 'link', 'playlist', 'log', 'quote', 'fixation', 'rabbit-hole-item', 'media-preview'] as const;
+export const contentWarningTypes = ['beat', 'version', 'release', 'link', 'playlist', 'log', 'quote', 'fixation', 'rabbit-hole-item', 'media-preview'] as const;
 export type ContentWarningType = typeof contentWarningTypes[number];
 
 export type ContentWarningRequest = {
@@ -64,7 +64,7 @@ export function subscribeContentApproval(contentType: string, documentId: string
 }
 
 export function warningLabel(type: ContentWarningType) {
-  return ({ beat: 'Beat', version: 'Version', link: 'Link', playlist: 'Playlist', log: 'Log', quote: 'Quote', fixation: 'Fixation', 'rabbit-hole-item': 'Rabbit Hole item', 'media-preview': 'Media preview' } as const)[type];
+  return ({ beat: 'Beat', version: 'Version', release: 'Release', link: 'Link', playlist: 'Playlist', log: 'Log', quote: 'Quote', fixation: 'Fixation', 'rabbit-hole-item': 'Rabbit Hole item', 'media-preview': 'Media preview' } as const)[type];
 }
 
 export async function runAfterContentApproval(requestApproval: () => boolean | Promise<boolean>, action: () => void | Promise<void>) {

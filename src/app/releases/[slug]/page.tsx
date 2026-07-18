@@ -9,6 +9,7 @@ import { buildReleaseQueue, type ReleaseBeatCandidate } from '@/src/lib/release-
 import { fetchSanity } from '@/src/sanity/lib/content';
 import { urlFor } from '@/src/sanity/lib/image';
 import { releaseDetailQuery } from '@/src/sanity/lib/queries';
+import { SensitivePageReveal } from '@/src/components/content-warning-action';
 
 type Props = { params: Promise<{ slug: string }> };
 type ReleaseDetail = {
@@ -18,6 +19,8 @@ type ReleaseDetail = {
   coverArt?: SanityImageSource;
   releaseType?: string;
   shortDescription?: string;
+  nsfw?: boolean;
+  nsfwReason?: string;
   publishedAt?: string;
   lane?: { _id: string; name?: string; slug?: string; primaryColor?: string; secondaryColor?: string };
   tags: Array<{ _id: string; name: string; slug?: string; group?: string }>;
@@ -33,8 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const release = await getRelease(slug);
   if (!release) return { title: 'Release Not Found | The Kitsune Protocol' };
-  const artwork = getArtworkUrl(release.coverArt);
-  const description = release.shortDescription || `${release.title}, a Release from The Kitsune Protocol.`;
+  const artwork = release.nsfw ? undefined : getArtworkUrl(release.coverArt);
+  const description = release.nsfw ? `${release.title}, a sensitive Release from The Kitsune Protocol.` : release.shortDescription || `${release.title}, a Release from The Kitsune Protocol.`;
   return {
     title: `${release.title} | The Kitsune Protocol`,
     description,
@@ -50,7 +53,8 @@ export default async function ReleasePage({ params }: Props) {
   const artwork = getArtworkUrl(release.coverArt);
   const beats = buildReleaseQueue(release.beats);
 
-  return <main className="mx-auto w-full max-w-6xl pb-8">
+  const identity = { id: release._id, type: 'release' as const, nsfw: release.nsfw, nsfwReason: release.nsfwReason, title: release.title };
+  return <SensitivePageReveal identity={identity}><main className="mx-auto w-full max-w-6xl pb-8">
     <Link href="/player" className="editorial-link focusable-surface">
       <ArrowLeft className="h-4 w-4" /> Back to Player
     </Link>
@@ -81,7 +85,7 @@ export default async function ReleasePage({ params }: Props) {
         </dl>
       </div>
     </section>
-  </main>;
+  </main></SensitivePageReveal>;
 }
 
 function isValidSlug(slug: string) {

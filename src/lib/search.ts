@@ -37,6 +37,8 @@ export type RawSearchResult = {
   fixationIds?: string[];
   releaseIds?: string[];
   containingReleaseIds?: string[];
+  nsfw?: boolean;
+  nsfwReason?: string;
 };
 
 export type SearchResult = {
@@ -59,6 +61,10 @@ export type SearchResult = {
   platforms: string[];
   quoteSource?: string;
   searchText: string;
+  nsfw?: boolean;
+  nsfwReason?: string;
+  gatedHref?: string;
+  gatedSourceHref?: string;
 };
 
 export type SearchCriteria = {
@@ -81,26 +87,29 @@ const typeLabels: Record<string, SearchResultType | undefined> = {
 export function normalizeSearchResult(item: RawSearchResult): SearchResult | null {
   const id = clean(item._id);
   const type = item._type ? typeLabels[item._type] : undefined;
-  const fullTitle = clean(item.title) || clean(item.name) || (type === 'Quote' ? clean(item.quoteText) : undefined) || (type === 'Log' ? openingLine(item.body) : undefined);
+  const fullTitle = clean(item.title) || clean(item.name) || (item.nsfw && type ? `Sensitive ${type}` : undefined) || (type === 'Quote' ? clean(item.quoteText) : undefined) || (type === 'Log' ? openingLine(item.body) : undefined);
   if (!id || !type || !fullTitle) return null;
 
   const destination = destinationFor(item, type);
   if (!destination) return null;
   const date = validDate(item.effectivePublishedAt);
-  const subtitle = clean(item.person) || clean(item.releaseType) || clean(item.logType) || clean(item.status) || clean(item.platformOverride) || clean(item.platformAuto)
+  const subtitle = item.nsfw ? undefined : clean(item.person) || clean(item.releaseType) || clean(item.logType) || clean(item.status) || clean(item.platformOverride) || clean(item.platformAuto)
     || clean(item.plainDescription) || clean(item.shortDescription) || clean(item.shortNote) || clean(item.note);
   const platforms = type === 'Playlist' ? destination.platforms : type === 'Link' ? [clean(item.platformOverride) || clean(item.platformAuto) || 'Website/Article'] : [];
   const quoteSource = type === 'Quote' ? clean(item.sourceTitle) : undefined;
-  const searchable = [fullTitle, subtitle, item.body, ...(item.bullets || []), item.quoteText, item.person, quoteSource, ...platforms]
+  const searchable = [fullTitle, subtitle, ...(item.nsfw ? [] : [item.body, ...(item.bullets || []), item.quoteText, item.person, quoteSource]), ...platforms]
     .map(clean).filter((value): value is string => Boolean(value)).join(' ').toLocaleLowerCase();
 
+  const safeDestination = item.nsfw ? { ...destination, ...(destination.external ? { gatedHref: destination.href, href: '#' } : {}), ...(destination.sourceHref ? { gatedSourceHref: destination.sourceHref, sourceHref: '#' } : {}) } : destination;
   return {
     id,
     type,
     title: fullTitle,
-    ...destination,
+    ...safeDestination,
     subtitle,
-    imageUrl: searchThumbnailUrl(item.imageUrl),
+    imageUrl: item.nsfw ? undefined : searchThumbnailUrl(item.imageUrl),
+    nsfw: item.nsfw === true,
+    nsfwReason: clean(item.nsfwReason),
     date,
     year: date ? String(new Date(date).getUTCFullYear()) : undefined,
     tagIds: unique(item.tagIds),

@@ -4,11 +4,13 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Check, ExternalLink, ImageIcon, Play, Plus } from 'lucide-react';
 import { SpotifyPlaylistEmbed } from './spotify-playlist-embed';
 import type { RabbitHoleCategory, RabbitHoleItem } from '@/src/lib/rabbit-hole';
+import { useSensitiveAction, WarningExternalLink } from './content-warning-action';
+import { urlFor } from '@/src/sanity/lib/image';
 
 const INITIAL_FEED_COUNT = 8;
 const FEED_INCREMENT = 8;
 
-export type RabbitHoleBrowserItem = Omit<RabbitHoleItem, 'thumbnail'> & { thumbnailUrl?: string };
+export type RabbitHoleBrowserItem = RabbitHoleItem;
 
 type RabbitHoleBrowserProps = {
   categories: RabbitHoleCategory[];
@@ -81,6 +83,8 @@ function CategoryButton({ selected, onClick, children }: { selected: boolean; on
 
 function RabbitHoleEntry({ item, featured, index, previewOpen, onTogglePreview }: { item: RabbitHoleBrowserItem; featured?: boolean; index: number; previewOpen: boolean; onTogglePreview: () => void }) {
   const previewId = useId();
+  const identity = { id: item.id, type: 'link' as const, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.title };
+  const { approved, run } = useSensitiveAction(identity, 'open this Rabbit Hole item');
   const previewActionRef = useRef<HTMLButtonElement>(null);
   const wasPreviewOpen = useRef(previewOpen);
   useEffect(() => {
@@ -93,11 +97,11 @@ function RabbitHoleEntry({ item, featured, index, previewOpen, onTogglePreview }
     <div className="min-w-0">
       {featured ? <EntryMetadata item={item} /> : null}
       {item.title ? <h3 className={`${featured ? 'mt-3 text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'} break-words font-semibold leading-tight tracking-[-0.025em] text-[var(--text-primary)]`}>{item.title}</h3> : <p className="type-section-heading break-words">{domain(item.url)}</p>}
-      {item.note ? <p className="type-reading mt-4 whitespace-pre-line">{item.note}</p> : null}
+      {approved && item.note ? <p className="type-reading mt-4 whitespace-pre-line">{item.note}</p> : null}
       {!featured ? <div className="mt-6"><MediaPresentation item={item} previewId={previewId} previewOpen={previewOpen} onTogglePreview={onTogglePreview} /></div> : null}
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2">
-        {item.trustedEmbedUrl ? <button ref={previewActionRef} type="button" data-preview-action aria-controls={previewId} aria-expanded={previewOpen} onClick={onTogglePreview} className="action-control focusable-surface">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
-        <a href={item.url} target="_blank" rel="noopener noreferrer" className="external-link focusable-surface" aria-label={`Open ${item.provider} in a new tab`}>Open {item.provider}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>
+        {item.trustedEmbedUrl ? <button ref={previewActionRef} type="button" data-preview-action aria-controls={previewId} aria-expanded={previewOpen} onClick={() => previewOpen ? onTogglePreview() : void run(onTogglePreview)} className="action-control focusable-surface">{previewOpen ? 'Close Preview' : `Load ${item.trustedEmbedProvider} Preview`}</button> : null}
+        <WarningExternalLink identity={identity} href={item.url} className="external-link focusable-surface" ariaLabel={`Open ${item.provider} in a new tab`}>Open {item.provider}<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink>
       </div>
     </div>
   </article>;
@@ -112,6 +116,9 @@ function EntryMetadata({ item }: { item: RabbitHoleBrowserItem }) {
 }
 
 function MediaPresentation({ item, previewId, previewOpen, onTogglePreview }: { item: RabbitHoleBrowserItem; previewId: string; previewOpen: boolean; onTogglePreview: () => void }) {
+  const identity = { id: item.id, type: 'link' as const, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.title };
+  const { approved, run } = useSensitiveAction(identity, 'load this preview');
+  const thumbnailUrl = approved && item.thumbnail ? urlFor(item.thumbnail).width(1200).fit('max').auto('format').url() : undefined;
   if (previewOpen && item.trustedEmbedUrl && item.trustedEmbedProvider === 'YouTube') {
     return <div id={previewId} role="region" aria-label={`${item.title || item.provider} preview`} className="w-full overflow-hidden bg-black" style={{ aspectRatio: '16 / 9' }}>
       <iframe src={item.trustedEmbedUrl} title={`${item.title || item.provider} YouTube preview`} loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" className="h-full w-full border-0" />
@@ -122,16 +129,16 @@ function MediaPresentation({ item, previewId, previewOpen, onTogglePreview }: { 
   }
 
   const fallback = <>
-    {item.thumbnailUrl ? <>
+    {thumbnailUrl ? <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={item.thumbnailUrl} alt={`${item.title || item.provider} preview image`} loading="lazy" className="h-full w-full object-cover" />
+      <img src={thumbnailUrl} alt={`${item.title || item.provider} preview image`} loading="lazy" className="h-full w-full object-cover" />
       {item.trustedEmbedUrl ? <span aria-hidden="true" className="absolute inset-0 grid place-items-center bg-black/20"><span className="grid h-14 w-14 place-items-center rounded-full bg-black/75 text-white"><Play className="h-5 w-5" fill="currentColor" /></span></span> : null}
     </> : <span className="grid min-h-48 place-items-center text-[var(--text-muted)]"><span className="text-center"><ImageIcon className="mx-auto h-10 w-10" /><span className="type-metadata mt-3 block">{item.provider}</span></span></span>}
   </>;
   const className = "focusable-surface relative grid w-full place-items-center overflow-hidden bg-[var(--bg-2)] text-left";
   const style = { aspectRatio: item.thumbnailAspectRatio || 16 / 9 };
   return item.trustedEmbedUrl
-    ? <button id={previewId} type="button" aria-expanded="false" onClick={onTogglePreview} className={`${className} cursor-pointer`} style={style} aria-label={`Load ${item.trustedEmbedProvider} preview for ${item.title || item.provider}`}>{fallback}</button>
+    ? <button id={previewId} type="button" aria-expanded="false" onClick={() => void run(onTogglePreview)} className={`${className} cursor-pointer`} style={style} aria-label={`Load ${item.trustedEmbedProvider} preview for ${item.title || item.provider}`}>{fallback}</button>
     : <div id={previewId} className={className} style={style}>{fallback}</div>;
 }
 

@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ExternalLink, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { filterSearchResults, type SearchCriteria, type SearchResult, type SearchResultType } from '@/src/lib/search';
 import { MediaArtwork } from './presentation-primitives';
+import { useSensitiveAction } from './content-warning-action';
 
 export type SearchFilter = { id: string; label: string };
 type FilterKey = Exclude<keyof SearchCriteria, 'query' | 'type'>;
@@ -74,9 +76,13 @@ export function SearchBrowser({ groups, results, types }: { groups: SearchFilter
 }
 
 function ResultRow({ result }: { result: SearchResult }) {
+  const router = useRouter();
+  const type = result.type.toLowerCase();
+  const identity = { id: result.id, type: (type === 'release' ? 'release' : type === 'beat' ? 'beat' : type === 'link' ? 'link' : type === 'playlist' ? 'playlist' : type === 'log' ? 'log' : type === 'quote' ? 'quote' : 'fixation') as 'release' | 'beat' | 'link' | 'playlist' | 'log' | 'quote' | 'fixation', nsfw: result.nsfw, nsfwReason: result.nsfwReason, title: result.title };
+  const { run } = useSensitiveAction(identity, result.external ? 'open this destination' : 'open this archive item');
   const content = <><MediaArtwork src={result.imageUrl} alt="" size="compact" /><span className="min-w-0"><span className="type-protocol-label block text-[var(--text-muted)]">{result.type}</span><span className="mt-1 block break-words text-base font-semibold leading-snug text-[var(--text-primary)]">{result.title}</span><span className="type-metadata mt-1 block break-words">{[result.subtitle, result.externalLabel, result.date ? formatDate(result.date) : undefined].filter(Boolean).join(' · ')}</span></span>{result.external ? <ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--text-muted)]" /> : null}</>;
   const className = 'row-link focusable-surface grid min-h-20 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--line-subtle)] py-4';
-  return <article className="min-w-0">
+  return <article className="min-w-0" onClick={(event) => { if (!result.nsfw) return; const anchor = (event.target as HTMLElement).closest('a'); if (!anchor) return; event.preventDefault(); const href = anchor.getAttribute('href') === '#' && result.gatedSourceHref ? result.gatedSourceHref : result.gatedHref || anchor.href; void run(() => anchor.target === '_blank' ? void window.open(href, '_blank', 'noopener,noreferrer') : router.push(anchor.getAttribute('href') || result.href)); }}>
     {result.external ? <a href={result.href} target="_blank" rel="noopener noreferrer" className={className} aria-label={`${result.title} — open ${result.externalLabel || 'external destination'} in a new tab`}>{content}</a> : <Link href={result.href} className={className}>{content}</Link>}
     {result.sourceHref ? <div className="-mt-2 flex justify-end border-b border-[var(--line-subtle)] pb-2"><a href={result.sourceHref} target="_blank" rel="noopener noreferrer" className="external-link focusable-surface" aria-label={`${result.sourceLabel || 'Open source'} for ${result.title} in a new tab`}>{result.sourceLabel || 'Open source'}<ExternalLink aria-hidden="true" className="h-3.5 w-3.5" /></a></div> : null}
   </article>;

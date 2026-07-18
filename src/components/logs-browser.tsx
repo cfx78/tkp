@@ -7,6 +7,7 @@ import { ExternalLink, Filter, X } from 'lucide-react';
 import { youtubePlaylistProviderLabel } from '@/src/lib/youtube-playlist';
 import type { LinkFeedItem, LogFeedItem, LogsFeedItem, LogsTag, LogType, PlaylistFeedItem, QuoteFeedItem } from '@/src/types/logs';
 import { PlaylistPreview } from './playlist-preview';
+import { useSensitiveAction, WarningExternalLink } from './content-warning-action';
 
 type ContentFilter = LogsFeedItem['kind'] | null;
 
@@ -135,26 +136,31 @@ function FeedEntry({ item, onOpenReading }: { item: LogsFeedItem; onOpenReading:
 }
 
 function LogEntry({ item, onOpenReading }: { item: LogFeedItem; onOpenReading: (log: LogFeedItem, opener: HTMLButtonElement) => void }) {
+  const identity = { id: item.id, type: 'log' as const, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.title };
+  const { approved, run } = useSensitiveAction(identity, 'read this log');
   const bodyPreview = item.body ? excerpt(item.body, 360) : undefined;
   const bulletPreview = item.bullets.slice(0, 3);
   return <div className="min-w-0 max-w-[var(--reading-measure)]">
     {item.title ? <h3 className="break-words text-2xl font-semibold leading-tight tracking-[-0.025em] text-[var(--text-primary)] sm:text-3xl">{item.title}</h3> : null}
-    {bodyPreview ? <p className={`${item.title ? 'mt-4' : ''} whitespace-pre-line text-[1.05rem] leading-8 text-[var(--text-secondary)]`}>{bodyPreview}</p> : null}
-    {bulletPreview.length ? <ul className={`${item.body || item.title ? 'mt-4' : ''} list-disc space-y-2 pl-5 text-[var(--text-secondary)]`}>{bulletPreview.map((bullet, index) => <li key={`${index}-${bullet}`}>{bullet}</li>)}</ul> : null}
+    {approved && bodyPreview ? <p className={`${item.title ? 'mt-4' : ''} whitespace-pre-line text-[1.05rem] leading-8 text-[var(--text-secondary)]`}>{bodyPreview}</p> : null}
+    {approved && bulletPreview.length ? <ul className={`${item.body || item.title ? 'mt-4' : ''} list-disc space-y-2 pl-5 text-[var(--text-secondary)]`}>{bulletPreview.map((bullet, index) => <li key={`${index}-${bullet}`}>{bullet}</li>)}</ul> : null}
+    {!approved ? <p className="type-small mt-4">Sensitive log content is hidden.</p> : null}
     {item.bullets.length > bulletPreview.length ? <p className="type-metadata mt-3">+{item.bullets.length - bulletPreview.length} more</p> : null}
-    <EntryFooter tags={item.tags}><button type="button" onClick={(event) => onOpenReading(item, event.currentTarget)} className="focusable-surface inline-flex min-h-11 items-center border-b border-[var(--accent)] px-1 text-sm font-semibold text-[var(--text-primary)]">Read log</button></EntryFooter>
+    <EntryFooter tags={item.tags}><button type="button" onClick={(event) => { const opener = event.currentTarget; void run(() => onOpenReading(item, opener)); }} className="focusable-surface inline-flex min-h-11 items-center border-b border-[var(--accent)] px-1 text-sm font-semibold text-[var(--text-primary)]">{approved ? 'Read log' : 'Reveal log'}</button></EntryFooter>
   </div>;
 }
 
 function LinkEntry({ item }: { item: LinkFeedItem }) {
-  return <div className={`grid min-w-0 gap-5 ${item.thumbnailUrl ? 'sm:grid-cols-[minmax(0,1fr)_10rem]' : ''}`}>
+  const identity = { id: item.id, type: 'link' as const, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.title };
+  const { approved } = useSensitiveAction(identity, 'reveal this link');
+  return <div className={`grid min-w-0 gap-5 ${approved && item.thumbnailUrl ? 'sm:grid-cols-[minmax(0,1fr)_10rem]' : ''}`}>
     <div className="min-w-0">
       {item.title ? <h3 className="break-words text-xl font-semibold leading-snug text-[var(--text-primary)] sm:text-2xl">{item.title}</h3> : <h3 className="text-lg font-semibold text-[var(--text-primary)]">Saved link</h3>}
-      {item.note ? <p className="type-reading mt-3 whitespace-pre-line">{item.note}</p> : null}
+      {approved && item.note ? <p className="type-reading mt-3 whitespace-pre-line">{item.note}</p> : null}
       {item.domain ? <p className="type-metadata mt-3 break-all">{item.domain}</p> : null}
-      <EntryFooter tags={item.tags}>{item.url ? <ExternalAction href={item.url}>Open {item.platform}</ExternalAction> : <span className="type-small">Destination unavailable.</span>}</EntryFooter>
+      <EntryFooter tags={item.tags}>{item.url ? <WarningExternalLink identity={identity} href={item.url} className="external-link focusable-surface" ariaLabel={`Open ${item.platform} in a new tab`}>Open {item.platform}<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink> : <span className="type-small">Destination unavailable.</span>}</EntryFooter>
     </div>
-    {item.thumbnailUrl ? <div className="order-first w-full max-w-[12rem] overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)] sm:order-last sm:max-w-none" style={{ aspectRatio: item.thumbnailAspectRatio || 1.5 }}>
+    {approved && item.thumbnailUrl ? <div className="order-first w-full max-w-[12rem] overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)] sm:order-last sm:max-w-none" style={{ aspectRatio: item.thumbnailAspectRatio || 1.5 }}>
       {/* Sanity thumbnails have content-defined remote hosts and aspect ratios; native lazy loading avoids an eager CSS background request. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={item.thumbnailUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -163,21 +169,25 @@ function LinkEntry({ item }: { item: LinkFeedItem }) {
 }
 
 function PlaylistEntry({ item }: { item: PlaylistFeedItem }) {
+  const identity = { id: item.id, type: 'playlist' as const, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.title };
+  const { approved } = useSensitiveAction(identity, 'reveal this playlist');
   return <div className="min-w-0 max-w-2xl">
     <h3 className="break-words text-2xl font-semibold leading-tight tracking-[-0.025em] text-[var(--text-primary)] sm:text-3xl">{item.title}</h3>
-    {item.shortNote ? <p className="type-reading mt-3 whitespace-pre-line">{item.shortNote}</p> : null}
-    <PlaylistPreview className="mt-4 max-w-xl" title={item.title} spotifyUrl={item.spotifyUrl} spotifyEmbedUrl={item.spotifyEmbedUrl} appleMusicUrl={item.appleMusicUrl} youtubeMusicUrl={item.youtubeMusicUrl} />
-    <EntryFooter tags={item.tags}><div className="flex flex-wrap gap-x-5">{item.spotifyUrl ? <ExternalAction href={item.spotifyUrl}>Spotify</ExternalAction> : null}{item.appleMusicUrl ? <ExternalAction href={item.appleMusicUrl}>Apple Music</ExternalAction> : null}{item.youtubeMusicUrl ? <ExternalAction href={item.youtubeMusicUrl}>{youtubePlaylistProviderLabel(item.youtubeMusicUrl)}</ExternalAction> : null}</div></EntryFooter>
+    {approved && item.shortNote ? <p className="type-reading mt-3 whitespace-pre-line">{item.shortNote}</p> : null}
+    <PlaylistPreview className="mt-4 max-w-xl" title={item.title} sensitiveIdentity={identity} spotifyUrl={item.spotifyUrl} spotifyEmbedUrl={item.spotifyEmbedUrl} appleMusicUrl={item.appleMusicUrl} youtubeMusicUrl={item.youtubeMusicUrl} />
+    <EntryFooter tags={item.tags}><div className="flex flex-wrap gap-x-5">{item.spotifyUrl ? <WarningExternalLink identity={identity} href={item.spotifyUrl} className="external-link focusable-surface">Spotify<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink> : null}{item.appleMusicUrl ? <WarningExternalLink identity={identity} href={item.appleMusicUrl} className="external-link focusable-surface">Apple Music<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink> : null}{item.youtubeMusicUrl ? <WarningExternalLink identity={identity} href={item.youtubeMusicUrl} className="external-link focusable-surface">{youtubePlaylistProviderLabel(item.youtubeMusicUrl)}<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink> : null}</div></EntryFooter>
   </div>;
 }
 
 function QuoteEntry({ item }: { item: QuoteFeedItem }) {
+  const identity = { id: item.id, type: 'quote' as const, nsfw: item.nsfw, nsfwReason: item.nsfwReason, title: item.sourceTitle || item.person };
+  const { approved, run } = useSensitiveAction(identity, 'reveal this quote');
   return <div className="min-w-0 max-w-[var(--reading-measure)]">
-    <blockquote>
+    {approved ? <blockquote>
       <p className="break-words text-[clamp(1.35rem,5vw,2.15rem)] leading-[1.35] tracking-[-0.025em] text-[var(--text-primary)]">{item.quoteText}</p>
       <footer className="mt-5 text-sm leading-6 text-[var(--text-secondary)]">&mdash; {item.person}{item.sourceTitle ? `, ${item.sourceTitle}` : ''}</footer>
-    </blockquote>
-    <EntryFooter tags={item.tags}><div className="flex flex-wrap gap-x-5">{item.sourceUrl ? <ExternalAction href={item.sourceUrl}>Open source</ExternalAction> : null}{item.foundVia ? <ExternalAction href={item.foundVia.url}>Found via {item.foundVia.title}</ExternalAction> : null}</div></EntryFooter>
+    </blockquote> : <button type="button" onClick={() => void run(() => {})} className="action-control focusable-surface">Reveal quote</button>}
+    <EntryFooter tags={item.tags}><div className="flex flex-wrap gap-x-5">{item.sourceUrl ? <WarningExternalLink identity={identity} href={item.sourceUrl} className="external-link focusable-surface">Open source<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink> : null}{item.foundVia ? <WarningExternalLink identity={identity} href={item.foundVia.url} className="external-link focusable-surface">Found via {item.foundVia.title}<ExternalLink aria-hidden="true" className="h-4 w-4" /></WarningExternalLink> : null}</div></EntryFooter>
   </div>;
 }
 
@@ -262,10 +272,6 @@ function ReadingDialog({ log, onClose }: { log: LogFeedItem; onClose: () => void
 
 function FilterButton({ selected, onClick, children }: { selected: boolean; onClick: () => void; children: ReactNode }) {
   return <button type="button" aria-pressed={selected} onClick={onClick} className={`focusable-surface inline-flex min-h-11 items-center border px-3 text-sm font-semibold ${selected ? 'border-[var(--accent)] bg-[var(--surface-active)] text-[var(--text-primary)]' : 'border-white/10 text-[var(--text-secondary)] hover:border-white/25 hover:text-[var(--text-primary)]'}`}>{children}</button>;
-}
-
-function ExternalAction({ href, children }: { href: string; children: ReactNode }) {
-  return <a href={href} target="_blank" rel="noopener noreferrer" className="external-link focusable-surface" aria-label={`${String(children)} (opens in a new tab)`}>{children}<ExternalLink aria-hidden="true" className="h-4 w-4" /></a>;
 }
 
 function collectTags(items: LogsFeedItem[]) {
