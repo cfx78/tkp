@@ -8,6 +8,7 @@ import { ListeningMode } from './listening-mode';
 import { PlaybackQueue } from './playback-queue';
 import { ProtocolLabel } from './presentation-primitives';
 import { usePlayer } from './player-provider';
+import { useBeatArtworkUrl } from './beat-artwork';
 
 function time(value: number) { if (!Number.isFinite(value)) return '0:00'; return `${Math.floor(value / 60)}:${Math.floor(value % 60).toString().padStart(2, '0')}`; }
 
@@ -15,13 +16,13 @@ export function NowPlayingScreen() {
   const router = useRouter();
   const player = usePlayer();
   const beat = player.beat;
+  const cover = useBeatArtworkUrl(beat);
   const [isListeningModeOpen, setListeningModeOpen] = useState(false);
   const listeningModeEntryRef = useRef<HTMLButtonElement>(null);
   const closeListeningMode = useCallback(() => { setListeningModeOpen(false); requestAnimationFrame(() => listeningModeEntryRef.current?.focus()); }, []);
 
   if (!beat) return <main className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center text-center"><ProtocolLabel>Now Playing</ProtocolLabel><h1 className="mt-4 text-3xl font-semibold text-[var(--text-primary)]">Nothing queued yet</h1><p className="type-small mt-3">Choose a Beat, Release, or Main Library shuffle to begin.</p><Link href="/player" className="text-cta focusable-surface mt-7">Open Player</Link></main>;
 
-  const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
   const RepeatIcon = player.repeatMode === 'one' ? Repeat1 : Repeat;
   const progress = player.duration > 0 ? Math.min(100, Math.max(0, player.currentTime / player.duration * 100)) : 0;
   const slug = beat.sourceType === 'version' ? beat.parentBeatSlug : beat.slug;

@@ -5,6 +5,7 @@ import { ListMusic, Play, RotateCcw, Shuffle } from 'lucide-react';
 import { ProtocolLabel } from './presentation-primitives';
 import { usePlayer } from './player-provider';
 import type { PlayerBeat } from '@/src/types/player';
+import { useBeatArtworkUrl } from './beat-artwork';
 
 export function PlaybackQueue({ compact = false }: { compact?: boolean }) {
   const player = usePlayer();
@@ -19,7 +20,7 @@ export function PlaybackQueue({ compact = false }: { compact?: boolean }) {
 }
 
 function QueueRow({ beat, active, position, onClick }: { beat: PlayerBeat; active?: boolean; position?: number; onClick: () => void }) {
-  const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
+  const cover = useBeatArtworkUrl(beat);
   const slug = beat.sourceType === 'version' ? beat.parentBeatSlug : beat.slug;
   const artwork = <span className="block h-11 w-11 shrink-0 overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)]">{cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}</span>;
   return <article aria-current={active ? 'true' : undefined} className={`grid min-h-16 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-[var(--line-subtle)] py-3 ${active ? 'bg-[var(--surface-active)] shadow-[inset_2px_0_0_var(--accent)]' : ''}`}>

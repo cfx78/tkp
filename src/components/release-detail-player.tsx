@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { LoaderCircle, Pause, Play } from 'lucide-react';
-import { MediaArtwork, ProtocolLabel } from './presentation-primitives';
+import { ProtocolLabel } from './presentation-primitives';
+import { BeatArtwork } from './beat-artwork';
 import { usePlayer } from './player-provider';
 import type { PlayerBeat } from '@/src/types/player';
 
@@ -47,7 +48,6 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
           const active = releaseIsCurrent && player.beat?._id === beat._id;
           const playing = active && player.isPlaying;
           const loading = active && player.isLoading;
-          const artwork = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
           const playTrack = () => active
             ? void player.togglePlayback()
             : void player.playQueue(beats, { type: 'release', title: releaseTitle }, index, false);
@@ -58,7 +58,7 @@ export function ReleaseDetailPlayer({ releaseTitle, beats, description }: { rele
               className={`grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)_2.75rem] items-center gap-3 border-b border-[var(--line-subtle)] py-4 transition-colors duration-[var(--motion-ui)] sm:grid-cols-[2rem_auto_minmax(0,1fr)_2.75rem] ${active ? 'bg-[var(--surface-active)] shadow-[inset_2px_0_0_var(--accent)]' : ''}`}
             >
               <span className="type-numeric text-center">{String(index + 1).padStart(2, '0')}</span>
-              <MediaArtwork src={artwork} size="compact" className="hidden sm:block" />
+              <BeatArtwork beat={beat} size="compact" className="hidden sm:block" />
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-[var(--text-primary)] sm:text-base">
                   {beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="metadata-link focusable-surface">{beat.title}</Link> : beat.title}

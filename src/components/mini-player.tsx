@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { LoaderCircle, Maximize2, Pause, Play, SkipBack, SkipForward } from 'lucide-react';
 import { usePlayer } from './player-provider';
+import { useBeatArtworkUrl } from './beat-artwork';
 
 export function MiniPlayer() {
   const { beat, isLoading, isPlaying, isQueueComplete, currentTime, duration, error, togglePlayback, seek, previous, next, hasPrevious, hasNext } = usePlayer();
+  const cover = useBeatArtworkUrl(beat);
   if (!beat) return null;
 
-  const cover = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
   const progress = duration > 0 ? Math.min(100, Math.max(0, currentTime / duration * 100)) : 0;
   const artwork = <span className="block h-11 w-11 shrink-0 overflow-hidden rounded-[var(--radius-subtle)] bg-[var(--bg-2)]">{cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : null}</span>;
 

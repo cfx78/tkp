@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { LoaderCircle, Pause, Play } from 'lucide-react';
-import { MediaArtwork, ProtocolLabel } from './presentation-primitives';
+import { ProtocolLabel } from './presentation-primitives';
+import { BeatArtwork } from './beat-artwork';
 import { usePlayer } from './player-provider';
 import type { PlayerBeat } from '@/src/types/player';
 
@@ -44,7 +45,6 @@ export function LaneDetailPlayer({ laneName, beats, description, accentColor }: 
           const active = laneIsCurrent && player.beat?._id === beat._id;
           const playing = active && player.isPlaying;
           const loading = active && player.isLoading;
-          const artwork = beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl;
           const playBeat = () => active
             ? void player.togglePlayback()
             : void player.playQueue(beats, { type: 'lane', title: laneName }, index, false);
@@ -56,7 +56,7 @@ export function LaneDetailPlayer({ laneName, beats, description, accentColor }: 
               style={{ boxShadow: active ? `inset 2px 0 0 ${accentColor}` : undefined }}
             >
               <span className="type-numeric text-center">{String(index + 1).padStart(2, '0')}</span>
-              <MediaArtwork src={artwork} size="compact" className="hidden sm:block" />
+              <BeatArtwork beat={beat} size="compact" className="hidden sm:block" />
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-[var(--text-primary)] sm:text-base">
                   {beat.slug ? <Link href={`/player/beats/${beat.slug}`} className="metadata-link focusable-surface">{beat.title}</Link> : beat.title}

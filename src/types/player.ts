@@ -10,6 +10,9 @@ export type PlayerBeat = {
   slug?: string;
   status?: string;
   publishedAt?: string;
+  nsfw?: boolean;
+  nsfwReason?: string;
+  coverArt?: { _type?: string; asset?: { _type?: string; _ref?: string } };
   coverArtUrl?: string;
   lane?: {
     _id?: string;

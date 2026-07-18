@@ -4,6 +4,7 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 import { ListMusic, LoaderCircle, Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
 import { ProtocolLabel } from './presentation-primitives';
 import { usePlayer } from './player-provider';
+import { useBeatArtworkUrl } from './beat-artwork';
 
 type ListeningModeProps = {
   onClose: () => void;
@@ -33,7 +34,7 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
     '--listening-accent-rgb': palette.rgb,
     '--listening-secondary': palette.secondary,
   } as CSSProperties;
-  const cover = beat?.coverArtUrl || beat?.lane?.fallbackCoverArtUrl;
+  const cover = useBeatArtworkUrl(beat);
   const progress = player.duration > 0 ? Math.min(100, Math.max(0, (player.currentTime / player.duration) * 100)) : 0;
 
   useEffect(() => {

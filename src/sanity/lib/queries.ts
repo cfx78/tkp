@@ -29,7 +29,10 @@ const playerBeatProjection = groq`{
   title,
   "slug": slug.current,
   status,
-  "coverArtUrl": coverArt.asset->url,
+  nsfw,
+  nsfwReason,
+  coverArt,
+  "coverArtUrl": select(nsfw != true => coverArt.asset->url),
   lane->{
     _id,
     name,
@@ -50,7 +53,7 @@ export const publishedBeatsQuery = groq`*[_type == "beat" && defined(audioObject
 export const recentlyAddedBeatsQuery = groq`*[_type == "beat" && defined(audioObjectKey) && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]] | order(coalesce(publishedAt, _createdAt) desc)[0...8]${playerBeatProjection}`;
 
 export const beatFileQuery = groq`*[_type == "beat" && slug.current == $slug && status in ["main", "approvedDemo", "sketch", "roughMix", "alternateMix"]][0]{
-  _id, title, "slug": slug.current, status, shortNote, publishedAt, nsfw, nsfwReason,
+  _id, title, "slug": slug.current, status, shortNote, publishedAt, nsfw, nsfwReason, coverArt,
   "coverArtUrl": coverArt.asset->url,
   lane->{name, "slug": slug.current, primaryColor, secondaryColor, "fallbackCoverArtUrl": fallbackCoverArt.asset->url},
   "releases": *[_type == "release" && (references(^._id) || _id in ^.releaseRefs[]._ref)] | order(coalesce(publishedAt, _createdAt) desc){
@@ -95,8 +98,11 @@ export const releasesQuery = groq`*[_type == "release" && nsfw != true] | order(
     title,
     "slug": slug.current,
     status,
+    nsfw,
+    nsfwReason,
+    coverArt,
     "audioAvailable": defined(audioObjectKey),
-    "coverArtUrl": coverArt.asset->url,
+    "coverArtUrl": select(nsfw != true => coverArt.asset->url),
     lane->{
       name,
       "slug": slug.current,
@@ -128,9 +134,12 @@ export const laneDetailQuery = groq`*[
     title,
     "slug": slug.current,
     status,
+    nsfw,
+    nsfwReason,
+    coverArt,
     publishedAt,
     "audioAvailable": defined(audioObjectKey),
-    "coverArtUrl": coverArt.asset->url,
+    "coverArtUrl": select(nsfw != true => coverArt.asset->url),
     lane->{
       _id,
       name,
@@ -183,8 +192,11 @@ export const releaseDetailQuery = groq`*[
     title,
     "slug": slug.current,
     status,
+    nsfw,
+    nsfwReason,
+    coverArt,
     "audioAvailable": defined(audioObjectKey),
-    "coverArtUrl": coverArt.asset->url,
+    "coverArtUrl": select(nsfw != true => coverArt.asset->url),
     lane->{
       name,
       "slug": slug.current,
