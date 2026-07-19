@@ -65,3 +65,13 @@ For local production testing, build and start the app, visit it once online, the
 5. Confirm the branded TKP offline page opens, returns an ordinary document rather than a browser network error, and explicitly says music is unavailable offline.
 6. Confirm an uncached TKP deep link also falls back to the offline page.
 7. Restore connectivity and confirm playback still requires the network.
+
+## Temporary iOS Home Screen diagnostics
+
+`/pwa-diagnostics` is a temporary, unlinked, `noindex`/`nofollow` route for diagnosing iOS Home Screen service-worker control. It is manually opened on the installed app's exact HTTPS origin and intentionally renders without the public header, MiniPlayer, or bottom navigation.
+
+The route reports only local app context, reduced referrer origin, manifest metadata, registration/scope/worker states, bounded `serviceWorker.ready` and worker-handshake results, approved shell-cache state, `/offline` status/MIME/content markers, same-origin endpoint status/MIME, storage estimates, and a 30-entry local event timeline. The worker handshake returns only its diagnostic protocol version, cache version, script pathname, state, expected-cache presence, and the offline response's presence/status/content type.
+
+It does not query Sanity, render media/provider content, request storage persistence, clear registrations or caches, reload, upload telemetry, or expose cookies, signed URLs, headers, private page content, full referrer paths, or query strings. Its classification ranges from missing support/registration/control/cache/version states through `READY FOR OFFLINE RETEST`; readiness requires a secure standalone context, correct root scope, expected active and controlling worker, `tkp-shell-v2`, valid cached HTTP 200 HTML, and a successful handshake.
+
+Remove the route, panel, worker message handler, tests, shell exception, and this section after the iOS defect is identified and resolved.
