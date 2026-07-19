@@ -2,7 +2,7 @@
 
 ## Manifest and installed metadata
 
-`src/app/manifest.ts` uses the Next.js App Router manifest convention and emits `/manifest.webmanifest`. It declares the root start URL and scope, standalone display, English language, music/entertainment categories, the shared near-black theme/background, and the approved 192px/512px standard and maskable PNGs.
+`src/app/manifest.ts` uses the Next.js App Router manifest convention and emits `/manifest.webmanifest`. It explicitly declares same-origin `start_url: "/"` and `scope: "/"`, standalone display, English language, music/entertainment categories, the shared near-black theme/background, and the approved 192px/512px standard and maskable PNGs.
 
 Root metadata references the manifest, 16px/32px favicons, and 180px Apple touch icon. Apple standalone capability, application title, black-translucent status bar, theme color, and `viewport-fit=cover` are enabled. Existing page titles, descriptions, icon routes, typography, NSFW metadata behavior, and route behavior remain unchanged.
 
@@ -12,19 +12,23 @@ Root metadata references the manifest, 16px/32px favicons, and 180px Apple touch
 
 ## Worker and registration
 
-`public/sw.js` is a first-party root-scoped worker. `PwaRegistration` registers it only in production, after load or during an idle period, and skips registration when initially rendered under `/studio`. Registration failure is silent and cannot break rendering.
+`public/sw.js` is a first-party root-scoped worker. `PwaRegistration` mounts from the root layout, registers `/sw.js` non-blockingly with scope `/` promptly after hydration, sets `updateViaCache: "none"`, and skips registration when initially rendered under `/studio`. It does not wait for browser idle time or the window `load` event.
 
-The worker owns caches prefixed `tkp-shell-`; the current cache is `tkp-shell-v1`. Install precaches only:
+The worker owns caches prefixed `tkp-shell-`; the corrected cache is `tkp-shell-v2`. `/offline` is the critical install asset: installation fetches it with `no-store`, verifies a successful response, and stores it under one deterministic request key before installation can succeed. These local brand files are optional and are attempted independently, so either failure cannot reject installation:
 
 - `/offline`
 - `/brand/kitsune-mark.svg`
 - `/brand/icon-192.png`
 
-No unstable Next.js hashed filenames are hard-coded. During activation, the worker removes only obsolete caches with its own prefix. It does not call `skipWaiting`, claim clients, reload a page, or show update UI. An installed update therefore waits until the old controlled clients close, then becomes active naturally.
+No unstable Next.js hashed filenames are hard-coded, and Home or other dynamic documents are not precached. During activation, the worker removes only obsolete caches with its own prefix and calls `clients.claim()` so a newly activated first worker controls an already-open client without reloading it. It does not call `skipWaiting`, force a reload, or show update UI. An updated worker still waits naturally while an older worker controls active clients; after activation it claims eligible open clients.
+
+### Confirmed cold-launch correction
+
+The original mobile build installed successfully but could cold-launch to the browser/OS network error in airplane mode. The failure path combined delayed idle/load registration, an all-or-nothing install where an optional brand response could reject `/offline` caching, no activation claim for the first uncontrolled client, and `Response.error()` when the expected fallback was absent. The correction removes the unbounded registration gate, makes only `/offline` install-critical, claims clients on activation, and guarantees an HTML response for failed eligible navigations.
 
 ## Runtime strategy and explicit bypasses
 
-Same-origin navigations are network-first and are never written to Cache Storage. A genuine network failure receives the cached `/offline` document. This prevents a previously approved or sensitive page document from becoming a later generic fallback.
+Same-origin requests with `request.mode === "navigate"` are handled before generic static-resource logic, after security exclusions. They are network-first and are never written to Cache Storage. A thrown network failure receives the cached `/offline` document using a query-insensitive match. If that critical entry is unexpectedly absent, the worker returns a self-contained emergency offline document with HTTP 200 and `Content-Type: text/html; charset=utf-8`. Both documents state that music is unavailable offline. This prevents a previously approved or sensitive page document from becoming a later generic fallback.
 
 Successful, non-redirected same-origin `/_next/static/*` and `/brand/*` responses use cache-first behavior unless marked `private` or `no-store`. Everything else uses normal browser networking.
 
@@ -51,3 +55,13 @@ The root scope can observe Studio fetch events, but the first-party handler bypa
 Browsers decide whether and when to expose installation UI and when a waiting worker activates. Private/incognito modes, iOS versions, storage pressure, and enterprise policy can change PWA behavior. Deployment verification must confirm HTTPS, final domain/scope, manifest MIME type, icon presentation, Apple installed mode, production security headers, worker update behavior, and real-device safe areas.
 
 For local production testing, build and start the app, visit it once online, then inspect Application > Service Workers/Cache Storage. To clear development state, unregister `/sw.js` in browser developer tools and delete only caches whose names begin with `tkp-shell-`. Development mode does not register the worker.
+
+## Mobile cold-launch retest
+
+1. Deploy the corrected build to the same HTTPS origin used for installation.
+2. Remove the previously installed TKP app and clear that origin's site data where the browser permits it.
+3. Visit the deployed site online, install TKP again, open the installed app online, and leave it open for at least 15 seconds.
+4. Close the installed app completely, enable airplane mode, and launch it again.
+5. Confirm the branded TKP offline page opens, returns an ordinary document rather than a browser network error, and explicitly says music is unavailable offline.
+6. Confirm an uncached TKP deep link also falls back to the offline page.
+7. Restore connectivity and confirm playback still requires the network.

@@ -27,7 +27,13 @@ test('manifest defines a same-origin standalone app with approved icons', async 
 test('service worker has narrow shell caching and explicit unsafe-request bypasses', async () => {
   const worker = await readFile(new URL('public/sw.js', root), 'utf8');
   assert.match(worker, /CACHE_PREFIX = 'tkp-shell-'/);
-  assert.match(worker, /PRECACHE_URLS = \[OFFLINE_URL, '\/brand\/kitsune-mark\.svg', '\/brand\/icon-192\.png'\]/);
+  assert.match(worker, /CACHE_VERSION = 'v2'/);
+  assert.match(worker, /OFFLINE_CACHE_KEY = new Request\(new URL\(OFFLINE_URL, self\.location\.origin\)/);
+  assert.match(worker, /offlineResponse\.ok/);
+  assert.match(worker, /cache\.put\(OFFLINE_CACHE_KEY, offlineResponse\)/);
+  assert.match(worker, /Promise\.allSettled\(OPTIONAL_SHELL_URLS/);
+  assert.match(worker, /self\.clients\.claim\(\)/);
+  assert.doesNotMatch(worker, /skipWaiting\s*\(/);
   assert.match(worker, /request\.method !== 'GET'/);
   assert.match(worker, /url\.origin !== self\.location\.origin/);
   assert.match(worker, /headers\.has\('authorization'\)/);
@@ -37,7 +43,11 @@ test('service worker has narrow shell caching and explicit unsafe-request bypass
   assert.match(worker, /request\.destination === 'audio'/);
   assert.match(worker, /request\.destination === 'video'/);
   assert.match(worker, /request\.mode === 'navigate'/);
-  assert.match(worker, /caches\.match\(OFFLINE_URL\)/);
+  assert.match(worker, /caches\.match\(OFFLINE_CACHE_KEY, \{ ignoreSearch: true \}\)/);
+  assert.match(worker, /status: 200/);
+  assert.match(worker, /'Content-Type': 'text\/html; charset=utf-8'/);
+  const navigationHandler = worker.slice(worker.indexOf('async function networkFirstNavigation'), worker.indexOf('function emergencyOfflineResponse'));
+  assert.doesNotMatch(navigationHandler, /cache\.put/);
   assert.doesNotMatch(worker, /api\/playback[\s\S]*cache\.put|spotify|youtube|apple\.com|sanity\.io|r2\.cloudflarestorage|X-Amz-/i);
 });
 
@@ -51,7 +61,9 @@ test('offline route is content-free and registration is production-safe', async 
   assert.match(registration, /process\.env\.NODE_ENV !== 'production'/);
   assert.match(registration, /pathname\.startsWith\('\/studio'\)/);
   assert.match(registration, /register\('\/sw\.js', \{ scope: '\/'/);
-  assert.doesNotMatch(registration, /console\.|skipWaiting|location\.reload/);
+  assert.match(registration, /updateViaCache: 'none'/);
+  assert.match(registration, /setTimeout\([\s\S]*?, 0\)/);
+  assert.doesNotMatch(registration, /requestIdleCallback|addEventListener\('load'|skipWaiting|location\.reload/);
 });
 
 test('installed metadata references the manifest without changing audio architecture', async () => {
