@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { HomeBeatPlay } from '@/src/components/home-beat-play';
 import { MediaArtwork, ProtocolLabel, SectionHeading } from '@/src/components/presentation-primitives';
 import { PlaylistPreview } from '@/src/components/playlist-preview';
+import { EditorialDisplayTitle } from '@/src/components/editorial-display-title';
 import { externalDestinationLabel } from '@/src/lib/link-display';
 import { youtubePlaylistProviderLabel } from '@/src/lib/youtube-playlist';
 import { fetchSanity, type FixationSummary, type HomepageSettings, type ImageValue } from '@/src/sanity/lib/content';
@@ -29,7 +30,7 @@ export default async function HomePage() {
 
   return <main className="mx-auto w-full max-w-6xl pb-8">
     <section aria-label="Current Phase" className="grid gap-1 border-y border-[var(--line-subtle)] py-3 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:items-baseline sm:gap-5">
-      <ProtocolLabel className="text-[var(--text-muted)]">Current Phase</ProtocolLabel>
+      <EditorialDisplayTitle variant="phase">Current Phase</EditorialDisplayTitle>
       <p className="type-small">{settings?.currentPhaseText || 'The next phase is still taking shape.'}</p>
     </section>
 

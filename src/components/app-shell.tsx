@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { clsx } from 'clsx';
 import { Compass, Headphones, Home, Search, ScrollText } from 'lucide-react';
 import { KitsuneMark } from './kitsune-mark';
+import { BrandWordmark } from './brand-wordmark';
+import { EditorialDisplayTitle } from './editorial-display-title';
 import { MiniPlayer } from './mini-player';
 import { usePlayer } from './player-provider';
 
@@ -26,17 +28,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="public-app-shell min-h-screen bg-transparent text-[var(--text-primary)]">
       <header className="mx-auto flex min-h-[var(--shell-header-height)] w-full max-w-[var(--shell-max)] items-center px-[var(--page-inset-mobile)] pt-[env(safe-area-inset-top)]" aria-label="Site identity">
-        <Link href="/" className="focusable-surface group inline-flex min-h-11 min-w-0 items-center gap-3" aria-label="The Kitsune Protocol, Home">
-          <span className="relative grid h-7 w-7 shrink-0 place-items-center border border-[var(--line-subtle)] text-[var(--text-muted)] transition-colors duration-[var(--motion-ui)] group-hover:border-[var(--accent)]" aria-hidden="true">
-            <KitsuneMark variant="solid" className="absolute h-4 w-4" />
-            <span className="type-numeric text-[9px]">KP</span>
+        <Link href="/" className="focusable-surface group inline-flex min-h-11 min-w-0 max-w-[calc(100%-2.5rem)] items-center gap-2.5" aria-label="The Kitsune Protocol, Home">
+          <span className="relative grid h-8 w-8 shrink-0 place-items-center text-[var(--text-primary)]" aria-hidden="true">
+            <KitsuneMark className="h-7 w-7" />
           </span>
-          <span className="min-w-0">
-            <span className="block truncate text-[0.8125rem] font-semibold tracking-[0.01em] text-[var(--text-primary)]">The Kitsune Protocol</span>
-            <span className="type-metadata mt-0.5 block truncate text-[9px] uppercase tracking-[0.16em]">Personal archive</span>
+          <span className="min-w-0 overflow-visible">
+            <BrandWordmark variant="compact" />
+            <EditorialDisplayTitle variant="subtitle" className="brand-lockup-subtitle">Personal Archive</EditorialDisplayTitle>
           </span>
         </Link>
-        <span aria-hidden="true" className="ml-auto h-px w-[clamp(2rem,14vw,9rem)] bg-[var(--line-subtle)]" />
+        <span aria-hidden="true" className="ml-auto h-px min-w-4 flex-1 bg-[var(--line-subtle)]" />
       </header>
 
       <div className={clsx(

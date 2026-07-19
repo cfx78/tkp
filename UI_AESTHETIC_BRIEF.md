@@ -1,5 +1,7 @@
 # The Kitsune Protocol — Final Aesthetic Brief
 
+> Implementation authority: `docs/VISUAL_DIRECTION_ADDENDUM.md` refines visual execution, `docs/TYPOGRAPHY_SYSTEM.md` defines display typography, and `docs/KITSUNE_IDENTITY_ASSETS.md` defines the approved mask and asset pipeline. These documents do not alter `MASTER_DOC.md` product behavior.
+
 ## 1. Definitive aesthetic
 
 **Internal name:** Midnight City-Pop Archive  
