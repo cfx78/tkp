@@ -47,9 +47,10 @@ test('required raster assets decode at exact dimensions with opaque corners', as
   }
 });
 
-test('App Router convention icons exist without conflicting metadata', async () => {
+test('App Router convention icons exist with approved installed metadata', async () => {
   const layout = await readFile(new URL('src/app/layout.tsx', root), 'utf8');
-  assert.doesNotMatch(layout, /icons\s*:/);
+  assert.match(layout, /icons\s*:/);
+  assert.match(layout, /apple-touch-icon\.png/);
   for (const [name, size] of [['icon.png', 512], ['apple-icon.png', 180]] as const) {
     const metadata = await sharp(fileURLToPath(new URL(`src/app/${name}`, root))).metadata();
     assert.equal(metadata.width, size);
@@ -57,9 +58,8 @@ test('App Router convention icons exist without conflicting metadata', async () 
   }
 });
 
-test('identity work introduces no PWA files, package changes, or KP placeholder', async () => {
+test('identity work keeps the approved mark and never restores the KP placeholder', async () => {
   const shell = await readFile(new URL('src/components/app-shell.tsx', root), 'utf8');
   assert.match(shell, /<KitsuneMark/);
   assert.doesNotMatch(shell, />KP</);
-  for (const name of ['manifest.webmanifest', 'manifest.json', 'sw.js', 'service-worker.js']) await assert.rejects(stat(new URL(`public/${name}`, root)));
 });
