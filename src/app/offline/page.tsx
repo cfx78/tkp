@@ -1,7 +1,6 @@
-import Link from 'next/link';
+/* eslint-disable @next/next/no-html-link-for-pages -- Recovery must bypass the App Router and work before hydration. */
 import { BrandWordmark } from '@/src/components/brand-wordmark';
 import { KitsuneMark } from '@/src/components/kitsune-mark';
-import { OfflineRetry } from '@/src/components/offline-retry';
 
 export const dynamic = 'force-static';
 
@@ -16,9 +15,8 @@ export default function OfflinePage() {
         <p className="type-protocol-label mt-10 text-[var(--text-muted)]">Offline</p>
         <h1 className="mt-3 text-[clamp(2rem,9vw,4rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-[var(--text-primary)]">The archive needs a connection.</h1>
         <p className="type-reading mt-5">This offline shell keeps the app recognizable, but current archive content and music are not available offline.</p>
-        <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2">
-          <OfflineRetry />
-          <Link href="/" className="editorial-link focusable-surface">Go Home</Link>
+        <div className="mt-8">
+          <a href="/" className="action-control focusable-surface">Try Again</a>
         </div>
       </div>
     </main>

@@ -28,20 +28,20 @@ export default async function HomePage() {
   const playerBeat: PlayerBeat | null = beat ? { _id: beat._id, title: beat.title || 'Untitled Beat', slug: beat.slug, status: beat.status, coverArtUrl: beat.coverArt?.asset?.url, lane: { name: beat.lane?.name, slug: beat.lane?.slug, fallbackCoverArtUrl: beat.lane?.fallbackCoverArt?.asset?.url } } : null;
   const featuredFixations = (settings?.featuredFixations || []).filter((fixation): fixation is FixationSummary => Boolean(fixation?._id && fixation.slug && fixation.nsfw !== true));
 
-  return <main className="mx-auto w-full max-w-6xl pb-8">
-    <section aria-label="Current Phase" className="grid gap-1 border-y border-[var(--line-subtle)] py-3 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:items-baseline sm:gap-5">
-      <EditorialDisplayTitle variant="phase">Current Phase</EditorialDisplayTitle>
-      <p className="type-small">{settings?.currentPhaseText || 'The next phase is still taking shape.'}</p>
+  return <main className="home-environment relative mx-auto w-full max-w-6xl pb-8">
+    <div className="home-environment__city" aria-hidden="true" />
+    <section aria-label="Current Phase" className="relative z-[1] border-y border-[var(--line-subtle)] py-4">
+      <ProtocolLabel className="text-[var(--text-muted)]">Current Phase</ProtocolLabel>
+      <EditorialDisplayTitle variant="phase" className="mt-2 max-w-3xl">{settings?.currentPhaseText || 'The next phase is still taking shape.'}</EditorialDisplayTitle>
     </section>
 
     {announcementIsActive ? <section className="mt-7 min-w-0 border-l-2 border-[var(--warning)] py-3 pl-4">
       <div className="min-w-0"><ProtocolLabel className="text-[var(--warning)]">New Release Broadcast</ProtocolLabel><h2 className="mt-2 break-words text-lg font-semibold text-[var(--text-primary)]">{announcement?.headline || announcement?.release?.title}</h2>{announcement?.release?.slug ? <Link href={`/releases/${announcement.release.slug}`} className="editorial-link focusable-surface mt-2 w-fit">Open {announcement.release.title}<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link> : null}</div>
     </section> : null}
 
-    <section aria-labelledby="latest-beat-title" className="relative mt-[clamp(2.75rem,8vw,6.5rem)] grid items-center gap-9 md:grid-cols-[minmax(16rem,.92fr)_minmax(0,1.08fr)] md:gap-[clamp(3rem,8vw,7rem)]">
-      <div className="relative mx-auto w-fit md:mx-0">
-        <div aria-hidden="true" className="absolute inset-[18%] -z-10 bg-[var(--artwork-halo)] blur-3xl" />
-        <MediaArtwork src={beatArtwork} alt="" size="feature" className="shadow-[0_26px_76px_rgba(0,0,0,0.46),var(--artwork-bloom)]" />
+    <section aria-labelledby="latest-beat-title" className="relative z-[1] mt-[clamp(3.75rem,10vw,7.5rem)] grid items-center gap-9 md:grid-cols-[minmax(18rem,.96fr)_minmax(0,1.04fr)] md:gap-[clamp(3rem,8vw,7rem)]">
+      <div className="visual-artwork-stage mx-auto w-fit md:mx-0">
+        <MediaArtwork src={beatArtwork} alt="" size="feature" className="visual-artwork-primary" />
       </div>
       <div className="min-w-0 md:py-8">
         <ProtocolLabel>Latest Beat</ProtocolLabel>
@@ -53,14 +53,17 @@ export default async function HomePage() {
     </section>
 
     <section className="mt-[clamp(4.5rem,12vw,9rem)]">
-      <div className="grid gap-4 border-b border-[var(--line-subtle)] pb-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><SectionHeading label="Featured Fixations" title="Rabbit holes in focus" /><p className="type-metadata">Selected from the current archive</p></div>
+      <div className="grid gap-4 border-b border-[var(--line-subtle)] pb-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><SectionHeading label="Featured Fixations" title="Rabbit holes in focus" editorial /><p className="type-metadata">Selected from the current archive</p></div>
       <div>{featuredFixations.length ? featuredFixations.map((fixation, index) => <FeaturedFixation key={fixation._id} fixation={fixation} primary={index === 0} index={index} />) : <p className="type-small border-b border-[var(--line-subtle)] py-7">No featured fixations yet.</p>}</div>
     </section>
 
     <section className="mt-[clamp(4.5rem,12vw,9rem)]">
-      <div className="grid min-w-0 gap-3 border-b border-[var(--line-subtle)] pb-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><SectionHeading label="Latest Logs" title="Recent entries" /><Link href="/logs" className="editorial-link focusable-surface w-fit">View All<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link></div>
+      <div className="grid min-w-0 gap-3 border-b border-[var(--line-subtle)] pb-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><SectionHeading label="Latest Logs" title="Recent entries" editorial /><Link href="/logs" className="editorial-link focusable-surface w-fit">View All<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link></div>
       <div><FeedEntry label="Latest Link" item={link} href={link?.url} external /><PlaylistEntry item={playlist} /><FeedEntry label="Latest Thought" item={thought} href="/logs" /></div>
     </section>
+
+    {/* Temporary: remove after the iOS Home Screen PWA diagnosis is complete. */}
+    <a href="/pwa-diagnostics" className="focusable-surface mt-8 inline-block text-xs text-[var(--text-muted)] underline underline-offset-4">PWA Diagnostics</a>
   </main>;
 }
 
@@ -68,8 +71,8 @@ function FeaturedFixation({ fixation, primary, index }: { fixation: FixationSumm
   const artwork = fixation.coverImage?.asset?.url;
   const href = fixation.slug ? `/fixations/${fixation.slug}` : '/fixations';
   if (primary) return <article className="grid gap-6 border-b border-[var(--line-subtle)] py-8 sm:grid-cols-[minmax(14rem,.82fr)_minmax(0,1.18fr)] sm:items-center sm:gap-10 sm:py-12">
-    <Link href={href} aria-label={`Open ${fixation.title} Fixation`} className="focusable-surface aspect-[16/9] overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)]">{artwork ? <img src={artwork} alt="" className="h-full w-full object-cover" /> : null}</Link>
-    <div className="min-w-0"><ProtocolLabel>{fixation.isCore ? 'Core Fixation' : fixation.status || 'Active'}</ProtocolLabel><h3 className="mt-3 break-words text-3xl font-semibold leading-tight tracking-[-0.03em] text-[var(--text-primary)] sm:text-4xl"><Link href={href} className="focusable-surface hover:text-[var(--accent)]">{fixation.title}</Link></h3>{fixation.shortDescription ? <p className="type-small mt-4 max-w-xl">{fixation.shortDescription}</p> : null}<Link href={href} className="editorial-link focusable-surface mt-5 w-fit">Open Fixation<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link></div>
+    <Link href={href} aria-label={`Open ${fixation.title} Fixation`} className="focusable-surface aspect-[16/9] overflow-hidden bg-[var(--bg-2)]">{artwork ? <img src={artwork} alt="" className="h-full w-full object-cover" /> : null}</Link>
+    <div className="min-w-0"><ProtocolLabel>{fixation.isCore ? 'Core Fixation' : fixation.status || 'Active'}</ProtocolLabel><EditorialDisplayTitle variant="section" className="mt-3"><Link href={href} className="focusable-surface hover:text-[var(--accent)]">{fixation.title}</Link></EditorialDisplayTitle>{fixation.shortDescription ? <p className="type-small mt-4 max-w-xl">{fixation.shortDescription}</p> : null}<Link href={href} className="editorial-link focusable-surface mt-5 w-fit">Open Fixation<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link></div>
   </article>;
   return <article className="grid min-w-0 gap-3 border-b border-[var(--line-subtle)] py-6 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-5">
     <span className="type-numeric hidden sm:block">{String(index + 1).padStart(2, '0')}</span>

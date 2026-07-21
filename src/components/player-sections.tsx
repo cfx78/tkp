@@ -11,6 +11,7 @@ import { BeatArtwork, useBeatArtworkUrl } from './beat-artwork';
 import type { PlayerBeat, PlayerLane, PlayerRelease } from '@/src/types/player';
 import { SensitiveSanityArtwork } from './sensitive-sanity-artwork';
 import { SensitiveNavigationBoundary, useSensitiveAction } from './content-warning-action';
+import { EditorialDisplayTitle } from './editorial-display-title';
 
 type Props = { mainLibrary: PlayerBeat[]; allBeats: PlayerBeat[]; recentlyAdded: PlayerBeat[]; releases: PlayerRelease[]; lanes: PlayerLane[] };
 
@@ -27,10 +28,10 @@ export function PlayerSections({ mainLibrary, allBeats, recentlyAdded, releases,
   };
 
   return <div className="flex flex-col gap-[clamp(3.5rem,10vw,7rem)]">
-    <section className="border-b border-[var(--line-subtle)] pb-12 pt-3">
+    <section className="player-convergence__hero border-b border-[var(--line-subtle)] pb-12 pt-3">
       <ProtocolLabel>Player</ProtocolLabel><h1 className="type-display mt-4">Beats</h1>
-      {current ? <div className="mt-10 grid items-center gap-7 sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)] sm:gap-10">
-        <div className="relative mx-auto w-full max-w-56 sm:mx-0"><div aria-hidden="true" className="absolute inset-[20%] -z-10 bg-[var(--artwork-halo)] blur-3xl" /><MediaArtwork src={cover} size="feature" className="w-full max-w-none shadow-[var(--artwork-bloom)]" /></div>
+      {current ? <div className="mt-10 grid items-center gap-9 md:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] md:gap-[clamp(3rem,8vw,7rem)]">
+        <div className="visual-artwork-stage mx-auto w-full max-w-[22rem] md:mx-0"><MediaArtwork src={cover} size="feature" className="visual-artwork-primary w-full max-w-none" /></div>
         <div className="min-w-0"><p className="type-metadata">Current media</p><h2 className="mt-3 break-words text-3xl font-semibold leading-tight tracking-[-0.03em] text-[var(--text-primary)] sm:text-4xl">{current.title}</h2><p className="type-small mt-3 break-words">{current.sourceType === 'version' ? `Context · ${current.parentBeatTitle}` : current.lane?.name || 'Unassigned lane'}</p><div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2"><Link href="/player/now-playing" className="text-cta focusable-surface"><Maximize2 className="h-4 w-4" /> Now Playing</Link>{currentSlug ? <Link href={`/player/beats/${currentSlug}`} className="editorial-link focusable-surface"><FileAudio className="h-4 w-4" /> Beat File</Link> : null}</div></div>
       </div> : <div className="mt-10 max-w-xl border-l border-[var(--line-subtle)] pl-4"><p className="text-lg font-semibold text-[var(--text-primary)]">The archive is quiet.</p><p className="type-small mt-2">Choose a Beat below or let the Main Library decide.</p></div>}
       <button type="button" onClick={shuffleMain} disabled={!mainLibrary.length} className="action-control focusable-surface mt-8"><Shuffle className="h-4 w-4" /> Shuffle Main Library</button>

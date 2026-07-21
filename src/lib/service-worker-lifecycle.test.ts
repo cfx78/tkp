@@ -15,7 +15,9 @@ async function createHarness() {
   const source = await readFile(new URL('public/sw.js', root), 'utf8');
   const listeners = new Map<string, (event: unknown) => void>();
   const entries = new Map<string, Response>();
+  const deletedCacheNames: string[] = [];
   let claimed = false;
+  let networkOnline = false;
   const key = (value: string | Request) => new URL(typeof value === 'string' ? value : value.url, 'https://tkp.example').pathname;
   const cache = {
     put: async (value: string | Request, response: Response) => { entries.set(key(value), response.clone()); },
@@ -23,8 +25,8 @@ async function createHarness() {
   };
   const caches = {
     open: async () => cache,
-    keys: async () => ['tkp-shell-v1', 'unrelated-cache'],
-    delete: async () => true,
+    keys: async () => ['tkp-shell-v1', 'tkp-shell-v2', 'unrelated-cache'],
+    delete: async (name: string) => { deletedCacheNames.push(name); return true; },
     match: async (value: string | Request) => cache.match(value),
   };
   const fetch = async (value: string | WorkerRequest) => {
@@ -32,6 +34,7 @@ async function createHarness() {
     if (url === '/offline') return new Response('<!doctype html><title>TKP Offline</title><p>Music is not available offline.</p>', { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     if (url.includes('kitsune-mark.svg')) throw new TypeError('optional asset unavailable');
     if (url.includes('icon-192.png')) return new Response('icon', { status: 200 });
+    if (networkOnline && url === 'https://tkp.example/') return new Response('<!doctype html><title>The Kitsune Protocol</title><h1>Home</h1>', { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
     throw new TypeError('network offline');
   };
   const self = {
@@ -51,7 +54,7 @@ async function createHarness() {
     listeners.get('fetch')?.({ request: value, respondWith: (result: Promise<Response>) => { response = result; } });
     return response ? await response : undefined;
   };
-  return { dispatchWait, dispatchFetch, entries, cache, claimed: () => claimed };
+  return { dispatchWait, dispatchFetch, entries, cache, deletedCacheNames, claimed: () => claimed, setNetworkOnline: (online: boolean) => { networkOnline = online; } };
 }
 
 test('worker installs the critical offline document despite optional asset failure and claims clients', async () => {
@@ -60,6 +63,7 @@ test('worker installs the critical offline document despite optional asset failu
   assert.equal(harness.entries.has('/offline'), true);
   await harness.dispatchWait('activate');
   assert.equal(harness.claimed(), true);
+  assert.deepEqual(harness.deletedCacheNames, ['tkp-shell-v1', 'tkp-shell-v2']);
 });
 
 test('offline start URL, deep links, and query navigations return cached HTTP 200 HTML', async () => {
@@ -71,6 +75,21 @@ test('offline start URL, deep links, and query navigations return cached HTTP 20
     assert.match(response?.headers.get('content-type') || '', /^text\/html/i);
     assert.match(await response!.text(), /Music is not available offline/i);
   }
+});
+
+test('the same full-document recovery navigation stays in TKP offline and reaches Home when connectivity returns', async () => {
+  const harness = await createHarness();
+  await harness.dispatchWait('install');
+
+  const offlineResponse = await harness.dispatchFetch(request('/'));
+  assert.equal(offlineResponse?.status, 200);
+  assert.match(await offlineResponse!.text(), /TKP Offline/);
+
+  harness.setNetworkOnline(true);
+  const onlineResponse = await harness.dispatchFetch(request('/'));
+  assert.equal(onlineResponse?.status, 200);
+  assert.match(await onlineResponse!.text(), /<h1>Home<\/h1>/);
+  assert.equal(harness.entries.has('/'), false);
 });
 
 test('missing cached document uses self-contained HTTP 200 HTML emergency fallback', async () => {

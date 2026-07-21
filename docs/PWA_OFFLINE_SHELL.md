@@ -8,13 +8,13 @@ Root metadata references the manifest, 16px/32px favicons, and 180px Apple touch
 
 ## Offline route
 
-`/offline` is force-static and contains only local brand identity, a concise connection explanation, an explicit statement that music is unavailable offline, a Retry button, and a Home link. It performs no Sanity request and includes no remote artwork, iframe, audio, signed URL, archive data, or normal bottom navigation.
+`/offline` is force-static and contains only local brand identity, a concise connection explanation, an explicit statement that music is unavailable offline, and one native `Try Again` link to `/`. The native link performs a full document navigation without depending on hydration or the App Router: while offline the worker returns the TKP offline document again, and once connectivity returns the same action loads Home. The route performs no Sanity request and includes no remote artwork, iframe, audio, signed URL, archive data, or normal bottom navigation.
 
 ## Worker and registration
 
 `public/sw.js` is a first-party root-scoped worker. `PwaRegistration` mounts from the root layout, registers `/sw.js` non-blockingly with scope `/` promptly after hydration, sets `updateViaCache: "none"`, and skips registration when initially rendered under `/studio`. It does not wait for browser idle time or the window `load` event.
 
-The worker owns caches prefixed `tkp-shell-`; the corrected cache is `tkp-shell-v2`. `/offline` is the critical install asset: installation fetches it with `no-store`, verifies a successful response, and stores it under one deterministic request key before installation can succeed. These local brand files are optional and are attempted independently, so either failure cannot reject installation:
+The worker owns caches prefixed `tkp-shell-`; the corrected recovery-action cache is `tkp-shell-v3`. The version change ensures existing installations replace the previously cached offline HTML. `/offline` is the critical install asset: installation fetches it with `no-store`, verifies a successful response, and stores it under one deterministic request key before installation can succeed. These local brand files are optional and are attempted independently, so either failure cannot reject installation:
 
 - `/offline`
 - `/brand/kitsune-mark.svg`
@@ -63,8 +63,9 @@ For local production testing, build and start the app, visit it once online, the
 3. Visit the deployed site online, install TKP again, open the installed app online, and leave it open for at least 15 seconds.
 4. Close the installed app completely, enable airplane mode, and launch it again.
 5. Confirm the branded TKP offline page opens, returns an ordinary document rather than a browser network error, and explicitly says music is unavailable offline.
-6. Confirm an uncached TKP deep link also falls back to the offline page.
-7. Restore connectivity and confirm playback still requires the network.
+6. Select `Try Again` while still offline and confirm the branded TKP offline experience remains visible without an iOS network-error page.
+7. Restore connectivity, select the same action, and confirm Home loads.
+8. Confirm an uncached TKP deep link also falls back to the offline page and playback still requires the network.
 
 ## Temporary iOS Home Screen diagnostics
 
@@ -72,6 +73,6 @@ For local production testing, build and start the app, visit it once online, the
 
 The route reports only local app context, reduced referrer origin, manifest metadata, registration/scope/worker states, bounded `serviceWorker.ready` and worker-handshake results, approved shell-cache state, `/offline` status/MIME/content markers, same-origin endpoint status/MIME, storage estimates, and a 30-entry local event timeline. The worker handshake returns only its diagnostic protocol version, cache version, script pathname, state, expected-cache presence, and the offline response's presence/status/content type.
 
-It does not query Sanity, render media/provider content, request storage persistence, clear registrations or caches, reload, upload telemetry, or expose cookies, signed URLs, headers, private page content, full referrer paths, or query strings. Its classification ranges from missing support/registration/control/cache/version states through `READY FOR OFFLINE RETEST`; readiness requires a secure standalone context, correct root scope, expected active and controlling worker, `tkp-shell-v2`, valid cached HTTP 200 HTML, and a successful handshake.
+It does not query Sanity, render media/provider content, request storage persistence, clear registrations or caches, reload, upload telemetry, or expose cookies, signed URLs, headers, private page content, full referrer paths, or query strings. Its classification ranges from missing support/registration/control/cache/version states through `READY FOR OFFLINE RETEST`; readiness requires a secure context, correct root scope, expected active and controlling worker, `tkp-shell-v3`, valid cached HTTP 200 HTML, and a successful handshake. Standalone/display-mode detection remains copied as useful launch-context metadata, but unreliable iOS reporting does not override an otherwise healthy worker classification.
 
 Remove the route, panel, worker message handler, tests, shell exception, and this section after the iOS defect is identified and resolved.

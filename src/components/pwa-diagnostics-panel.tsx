@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { classifyPwaDiagnostics } from '@/src/lib/pwa-diagnostics-classification';
 
-const EXPECTED_CACHE = 'tkp-shell-v2';
+const EXPECTED_CACHE = 'tkp-shell-v3';
 const EXPECTED_WORKER_PATH = '/sw.js';
 const TIMELINE_KEY = 'tkp_pwa_diagnostics_timeline:v1';
 const READY_TIMEOUT_MS = 3000;
@@ -38,21 +39,6 @@ function recordTimeline(label: string) {
 function workerSummary(worker?: ServiceWorker | null): WorkerSummary {
   const path = safePath(worker?.scriptURL);
   return { state: worker?.state || null, pathname: path?.pathname || null };
-}
-
-function classify(report: Record<string, unknown>) {
-  if (!report.secureContext) return 'ORIGIN OR SCOPE MISMATCH';
-  if (!report.serviceWorkerSupported) return 'NO SERVICE WORKER SUPPORT';
-  if (!report.registrationFound) return 'NO REGISTRATION';
-  if (!report.activeExpectedWorker) return 'REGISTRATION PRESENT, NO ACTIVE WORKER';
-  if (!report.scopeMatches || !report.manifestSameOrigin) return 'ORIGIN OR SCOPE MISMATCH';
-  if (!report.controlled) return 'ACTIVE WORKER, PAGE NOT CONTROLLED';
-  if (!report.controllerExpectedWorker) return 'ORIGIN OR SCOPE MISMATCH';
-  if (!report.expectedCacheExists || !report.offlinePresent) return 'OFFLINE CACHE MISSING';
-  if (!report.offlineValid) return 'OFFLINE DOCUMENT INVALID';
-  if (!report.handshakeSucceeded || !report.workerVersionMatches) return 'WORKER VERSION MISMATCH';
-  if (!report.standalone) return 'DIAGNOSTIC INCOMPLETE';
-  return 'READY FOR OFFLINE RETEST';
 }
 
 async function workerHandshake(worker: ServiceWorker) {
@@ -130,7 +116,7 @@ export function PwaDiagnosticsPanel() {
             const handshake = await workerHandshake(handshakeTarget);
             base.handshakeSucceeded = true;
             base.handshake = handshake;
-            base.workerVersionMatches = handshake.cacheVersion === 'v2' && handshake.scriptPathname === EXPECTED_WORKER_PATH && handshake.protocolVersion === '1';
+            base.workerVersionMatches = handshake.cacheVersion === 'v3' && handshake.scriptPathname === EXPECTED_WORKER_PATH && handshake.protocolVersion === '1';
             addEvent('worker handshake success');
           } catch (error) { base.handshakeSucceeded = false; base.handshakeError = error instanceof Error ? error.message : 'Handshake failed'; addEvent('worker handshake failure'); }
         }
@@ -155,7 +141,7 @@ export function PwaDiagnosticsPanel() {
     } catch (error) { base.diagnosticError = error instanceof Error ? error.message : 'Diagnostic failed'; }
 
     base.timeline = readTimeline();
-    setReport({ ...base, classification: classify(base) });
+    setReport({ ...base, classification: classifyPwaDiagnostics(base) });
     setBusy(false);
   }, [addEvent]);
 

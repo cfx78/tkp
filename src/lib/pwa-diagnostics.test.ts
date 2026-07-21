@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
+// @ts-expect-error Node 24 executes this TypeScript test file directly and requires the extension.
+import { classifyPwaDiagnostics } from './pwa-diagnostics-classification.ts';
 
 const root = new URL('../../', import.meta.url);
 
@@ -34,8 +36,44 @@ test('diagnostics are bounded, local-only, sanitized, and non-destructive', asyn
 
 test('classification requires expected controller, cache, offline HTML, and worker handshake', async () => {
   const panel = await readFile(new URL('src/components/pwa-diagnostics-panel.tsx', root), 'utf8');
-  for (const requirement of ['controlled', 'controllerExpectedWorker', 'expectedCacheExists', 'offlinePresent', 'offlineValid', 'handshakeSucceeded', 'workerVersionMatches', 'standalone']) assert.match(panel, new RegExp(`report\\.${requirement}`));
-  for (const status of ['READY FOR OFFLINE RETEST', 'NO SERVICE WORKER SUPPORT', 'NO REGISTRATION', 'REGISTRATION PRESENT, NO ACTIVE WORKER', 'ACTIVE WORKER, PAGE NOT CONTROLLED', 'OFFLINE CACHE MISSING', 'OFFLINE DOCUMENT INVALID', 'WORKER VERSION MISMATCH', 'ORIGIN OR SCOPE MISMATCH', 'DIAGNOSTIC INCOMPLETE']) assert.match(panel, new RegExp(status));
+  assert.match(panel, /classifyPwaDiagnostics\(base\)/);
+  assert.match(panel, /EXPECTED_CACHE = 'tkp-shell-v3'/);
+  assert.match(panel, /handshake\.cacheVersion === 'v3'/);
+  assert.match(panel, /standalone:/);
+
+  const healthy = {
+    secureContext: true,
+    serviceWorkerSupported: true,
+    registrationFound: true,
+    activeExpectedWorker: true,
+    scopeMatches: true,
+    manifestSameOrigin: true,
+    controlled: true,
+    controllerExpectedWorker: true,
+    expectedCacheExists: true,
+    offlinePresent: true,
+    offlineValid: true,
+    handshakeSucceeded: true,
+    workerVersionMatches: true,
+  };
+  assert.equal(classifyPwaDiagnostics({ ...healthy, standalone: false }), 'READY FOR OFFLINE RETEST');
+  assert.equal(classifyPwaDiagnostics(healthy), 'READY FOR OFFLINE RETEST');
+
+  const failures: Array<[Partial<typeof healthy>, string]> = [
+    [{ secureContext: false }, 'ORIGIN OR SCOPE MISMATCH'],
+    [{ serviceWorkerSupported: false }, 'NO SERVICE WORKER SUPPORT'],
+    [{ registrationFound: false }, 'NO REGISTRATION'],
+    [{ activeExpectedWorker: false }, 'REGISTRATION PRESENT, NO ACTIVE WORKER'],
+    [{ scopeMatches: false }, 'ORIGIN OR SCOPE MISMATCH'],
+    [{ controlled: false }, 'ACTIVE WORKER, PAGE NOT CONTROLLED'],
+    [{ controllerExpectedWorker: false }, 'ORIGIN OR SCOPE MISMATCH'],
+    [{ expectedCacheExists: false }, 'OFFLINE CACHE MISSING'],
+    [{ offlinePresent: false }, 'OFFLINE CACHE MISSING'],
+    [{ offlineValid: false }, 'OFFLINE DOCUMENT INVALID'],
+    [{ handshakeSucceeded: false }, 'WORKER VERSION MISMATCH'],
+    [{ workerVersionMatches: false }, 'WORKER VERSION MISMATCH'],
+  ];
+  for (const [override, expected] of failures) assert.equal(classifyPwaDiagnostics({ ...healthy, ...override }), expected);
 });
 
 test('worker handshake uses the exact request and exposes only approved diagnostic fields', async () => {

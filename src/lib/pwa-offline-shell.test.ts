@@ -27,7 +27,7 @@ test('manifest defines a same-origin standalone app with approved icons', async 
 test('service worker has narrow shell caching and explicit unsafe-request bypasses', async () => {
   const worker = await readFile(new URL('public/sw.js', root), 'utf8');
   assert.match(worker, /CACHE_PREFIX = 'tkp-shell-'/);
-  assert.match(worker, /CACHE_VERSION = 'v2'/);
+  assert.match(worker, /CACHE_VERSION = 'v3'/);
   assert.match(worker, /OFFLINE_CACHE_KEY = new Request\(new URL\(OFFLINE_URL, self\.location\.origin\)/);
   assert.match(worker, /offlineResponse\.ok/);
   assert.match(worker, /cache\.put\(OFFLINE_CACHE_KEY, offlineResponse\)/);
@@ -51,12 +51,12 @@ test('service worker has narrow shell caching and explicit unsafe-request bypass
   assert.doesNotMatch(worker, /api\/playback[\s\S]*cache\.put|spotify|youtube|apple\.com|sanity\.io|r2\.cloudflarestorage|X-Amz-/i);
 });
 
-test('offline route is content-free and registration is production-safe', async () => {
+test('offline route has one native full-document recovery action and registration is production-safe', async () => {
   const offline = await readFile(new URL('src/app/offline/page.tsx', root), 'utf8');
   assert.match(offline, /music are not available offline/);
-  assert.match(offline, /<OfflineRetry \/>/);
-  assert.match(offline, /href="\/"/);
-  assert.doesNotMatch(offline, /fetchSanity|iframe|audio|Signal/);
+  assert.match(offline, /<a href="\/"[^>]*>Try Again<\/a>/);
+  assert.equal((offline.match(/<a\b/g) || []).length, 1);
+  assert.doesNotMatch(offline, /from ['"]next\/link|<Link\b|OfflineRetry|location\.reload|router\.(?:push|replace)|fetchSanity|iframe|audio|Signal/);
   const registration = await readFile(new URL('src/components/pwa-registration.tsx', root), 'utf8');
   assert.match(registration, /process\.env\.NODE_ENV !== 'production'/);
   assert.match(registration, /pathname\.startsWith\('\/studio'\)/);

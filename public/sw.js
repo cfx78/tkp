@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'tkp-shell-';
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const SHELL_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline';
 const OFFLINE_CACHE_KEY = new Request(new URL(OFFLINE_URL, self.location.origin), { method: 'GET' });

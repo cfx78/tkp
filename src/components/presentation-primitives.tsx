@@ -1,4 +1,5 @@
 import type { HTMLAttributes, ReactNode } from 'react';
+import { EditorialDisplayTitle } from './editorial-display-title';
 
 function classes(...values: Array<string | undefined | false>) {
   return values.filter(Boolean).join(' ');
@@ -8,8 +9,8 @@ export function ProtocolLabel({ children, className, ...props }: HTMLAttributes<
   return <p className={classes('type-protocol-label', className)} {...props}>{children}</p>;
 }
 
-export function SectionHeading({ label, title, description, className }: { label?: string; title: string; description?: string; className?: string }) {
-  return <header className={className}>{label ? <ProtocolLabel>{label}</ProtocolLabel> : null}<h2 className={classes('type-section-heading', label && 'mt-2')}>{title}</h2>{description ? <p className="type-small mt-2 max-w-2xl">{description}</p> : null}</header>;
+export function SectionHeading({ label, title, description, className, editorial = false }: { label?: string; title: string; description?: string; className?: string; editorial?: boolean }) {
+  return <header className={className}>{label ? <ProtocolLabel>{label}</ProtocolLabel> : null}{editorial ? <EditorialDisplayTitle variant="section" className={label ? 'mt-3' : undefined}>{title}</EditorialDisplayTitle> : <h2 className={classes('type-section-heading', label && 'mt-2')}>{title}</h2>}{description ? <p className="type-small mt-2 max-w-2xl">{description}</p> : null}</header>;
 }
 
 export function HairlineDivider({ className }: { className?: string }) {

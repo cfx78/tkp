@@ -26,5 +26,5 @@ export default async function PlayerPage() {
     accentColor: validatedLaneColor(lane.primaryColor, defaultLaneAccent),
     beats: buildLaneQueue(allBeats, lane._id)
   }] : []);
-  return <main className="mx-auto w-full max-w-[var(--player-measure)]"><PlayerSections mainLibrary={mainLibrary} allBeats={allBeats} recentlyAdded={recentlyAdded} releases={releases} lanes={playerLanes} /></main>;
+  return <main className="player-convergence mx-auto w-full max-w-[var(--player-wide-measure)]"><PlayerSections mainLibrary={mainLibrary} allBeats={allBeats} recentlyAdded={recentlyAdded} releases={releases} lanes={playerLanes} /></main>;
 }
