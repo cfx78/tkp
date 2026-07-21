@@ -61,9 +61,6 @@ export default async function HomePage() {
       <div className="grid min-w-0 gap-3 border-b border-[var(--line-subtle)] pb-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"><SectionHeading label="Latest Logs" title="Recent entries" editorial /><Link href="/logs" className="editorial-link focusable-surface w-fit">View All<ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link></div>
       <div><FeedEntry label="Latest Link" item={link} href={link?.url} external /><PlaylistEntry item={playlist} /><FeedEntry label="Latest Thought" item={thought} href="/logs" /></div>
     </section>
-
-    {/* Temporary: remove after the iOS Home Screen PWA diagnosis is complete. */}
-    <a href="/pwa-diagnostics" className="focusable-surface mt-8 inline-block text-xs text-[var(--text-muted)] underline underline-offset-4">PWA Diagnostics</a>
   </main>;
 }
 

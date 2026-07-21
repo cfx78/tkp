@@ -23,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { beat } = usePlayer();
   const isNowPlaying = pathname === '/player/now-playing';
 
-  if (pathname.startsWith('/studio') || pathname === '/offline' || pathname === '/pwa-diagnostics') return <>{children}</>;
+  if (pathname.startsWith('/studio') || pathname === '/offline') return <>{children}</>;
 
   return (
     <div className="public-app-shell min-h-screen bg-transparent text-[var(--text-primary)]">

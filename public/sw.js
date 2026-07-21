@@ -4,7 +4,6 @@ const SHELL_CACHE = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline';
 const OFFLINE_CACHE_KEY = new Request(new URL(OFFLINE_URL, self.location.origin), { method: 'GET' });
 const OPTIONAL_SHELL_URLS = ['/brand/kitsune-mark.svg', '/brand/icon-192.png'];
-const DIAGNOSTIC_PROTOCOL_VERSION = '1';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(installOfflineShell());
@@ -28,27 +27,6 @@ self.addEventListener('activate', (event) => {
       .then(() => self.clients.claim()),
   );
 });
-
-self.addEventListener('message', (event) => {
-  if (event.data?.type !== 'TKP_PWA_DIAGNOSTICS_REQUEST' || !event.ports?.[0]) return;
-  event.waitUntil(respondToDiagnostics(event.ports[0]));
-});
-
-async function respondToDiagnostics(port) {
-  const cacheNames = await caches.keys();
-  const expectedCacheExists = cacheNames.includes(SHELL_CACHE);
-  const offlineResponse = expectedCacheExists ? await caches.match(OFFLINE_CACHE_KEY, { ignoreSearch: true }) : undefined;
-  port.postMessage({
-    protocolVersion: DIAGNOSTIC_PROTOCOL_VERSION,
-    cacheVersion: CACHE_VERSION,
-    scriptPathname: new URL(self.location.href).pathname,
-    workerState: self.registration?.active?.state || 'unknown',
-    expectedCacheExists,
-    offlinePresent: Boolean(offlineResponse),
-    offlineStatus: offlineResponse?.status ?? null,
-    offlineContentType: offlineResponse?.headers.get('content-type') || null,
-  });
-}
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
