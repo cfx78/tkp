@@ -17,9 +17,9 @@ export function HairlineDivider({ className }: { className?: string }) {
   return <hr aria-hidden="true" className={classes('hairline-divider', className)} />;
 }
 
-export function MediaArtwork({ src, alt = '', size = 'row', className }: { src?: string; alt?: string; size?: 'compact' | 'row' | 'feature'; className?: string }) {
+export function MediaArtwork({ src, alt = '', size = 'row', fit = 'cover', className }: { src?: string; alt?: string; size?: 'compact' | 'row' | 'feature'; fit?: 'cover' | 'contain'; className?: string }) {
   const sizes = { compact: 'h-[var(--artwork-compact)] w-[var(--artwork-compact)]', row: 'h-[var(--artwork-row)] w-[var(--artwork-row)]', feature: 'aspect-square w-[var(--artwork-feature)]' };
-  return <span className={classes('media-artwork block shrink-0', sizes[size], className)}>{src ? <img src={src} alt={alt} className="h-full w-full object-cover" /> : null}</span>;
+  return <span className={classes('media-artwork block shrink-0', sizes[size], className)}>{src ? <img src={src} alt={alt} className={classes('h-full w-full', fit === 'contain' ? 'object-contain object-center' : 'object-cover')} /> : null}</span>;
 }
 
 export function MetadataLine({ children, className }: { children: ReactNode; className?: string }) {
