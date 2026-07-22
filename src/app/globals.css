@@ -435,7 +435,11 @@ input[type="range"]:focus-visible {
 @media (max-width: 640px) {
   body { background-attachment: scroll; }
   .home-environment__city { inset-inline: calc(var(--page-inset-mobile) * -1); height: 34rem; opacity: 0.68; }
-  .visual-artwork-stage::after { inset-bottom: -9%; opacity: 0.48; }
+  .visual-artwork-stage::after {
+    inset-bottom: -9%;
+    opacity: 0.48;
+    transform: scaleX(0.88) skewX(-3deg);
+  }
   .editorial-display-title { letter-spacing: 0.14em; }
   .editorial-display-title--subtitle { letter-spacing: 0.16em; }
 }

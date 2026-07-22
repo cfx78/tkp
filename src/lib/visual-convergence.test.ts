@@ -37,3 +37,12 @@ test('visual atmosphere remains decorative and has accessibility fallbacks', asy
   assert.match(css, /@media \(forced-colors: active\)[\s\S]*?\.home-environment__city/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 });
+
+test('mobile artwork reflection stays locally bounded without hiding page overflow', async () => {
+  const css = await readFile(new URL('src/app/globals.css', root), 'utf8');
+  const mobileRules = css.match(/@media \(max-width: 640px\) \{[\s\S]*?\n\}/)?.[0] || '';
+
+  assert.match(mobileRules, /\.visual-artwork-stage::after\s*\{[\s\S]*?transform:\s*scaleX\(0\.88\) skewX\(-3deg\)/);
+  assert.doesNotMatch(mobileRules, /perspective\(|rotateX\(/);
+  assert.doesNotMatch(css, /(?:html|body)[^{]*\{[^}]*overflow-x:\s*(?:hidden|clip)/);
+});
