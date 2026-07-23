@@ -22,12 +22,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { beat } = usePlayer();
   const isNowPlaying = pathname === '/player/now-playing';
+  const isHome = pathname === '/';
 
   if (pathname.startsWith('/studio') || pathname === '/offline') return <>{children}</>;
 
   return (
     <div className="public-app-shell min-h-screen bg-transparent text-[var(--text-primary)]">
-      <header className="mx-auto flex min-h-[var(--shell-header-height)] w-full max-w-[var(--shell-max)] items-center px-[var(--page-inset-mobile)] pt-[env(safe-area-inset-top)]" aria-label="Site identity">
+      <header className={clsx('site-header mx-auto flex min-h-[var(--shell-header-height)] w-full max-w-[var(--shell-max)] items-center px-[var(--page-inset-mobile)] pt-[env(safe-area-inset-top)]', isHome && 'site-header--home')} aria-label="Site identity">
         <Link href="/" className="focusable-surface group inline-flex min-h-11 min-w-0 max-w-[calc(100%-2.5rem)] items-center gap-2.5" aria-label="The Kitsune Protocol, Home">
           <span className="relative grid h-8 w-8 shrink-0 place-items-center text-[var(--text-primary)]" aria-hidden="true">
             <KitsuneMark className="h-7 w-7" />

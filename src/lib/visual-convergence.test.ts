@@ -46,3 +46,15 @@ test('mobile artwork reflection stays locally bounded without hiding page overfl
   assert.doesNotMatch(mobileRules, /perspective\(|rotateX\(/);
   assert.doesNotMatch(css, /(?:html|body)[^{]*\{[^}]*overflow-x:\s*(?:hidden|clip)/);
 });
+
+test('Home opening uses the approved identity and keeps the beat as the only page heading', async () => {
+  const home = await readFile(new URL('src/app/page.tsx', root), 'utf8');
+
+  assert.match(home, /<BrandWordmark variant="title-card"/);
+  assert.match(home, /<KitsuneMark \/>/);
+  assert.match(home, /<section aria-label="Current Phase"/);
+  assert.match(home, /<section aria-labelledby="latest-beat-title"/);
+  assert.equal((home.match(/<h1\b/g) || []).length, 1);
+  assert.match(home, /<HomeBeatPlay beat=\{playerBeat\}/);
+  assert.match(home, /const href = fixation\.slug \? `\/fixations\/\$\{fixation\.slug\}`/);
+});
