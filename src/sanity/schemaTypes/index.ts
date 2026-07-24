@@ -8,6 +8,7 @@ import playlistType from './playlistType';
 import quoteType from './quoteType';
 import tagType from './tagType';
 import homepageSettingsType from './homepageSettingsType';
+import thumbnailAutomationType from './thumbnailAutomationType';
 
 export const schemaTypes = [
   beatType,
@@ -19,5 +20,6 @@ export const schemaTypes = [
   playlistType,
   quoteType,
   tagType,
-  homepageSettingsType
+  homepageSettingsType,
+  thumbnailAutomationType
 ];

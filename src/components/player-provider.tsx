@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef, type ReactNode } from 'react';
 import type { PlaybackContext, PlayerBeat, RepeatMode } from '@/src/types/player';
 import { historyEntryKey, isMeaningfulProgress, readPlaybackHistory, writePlaybackHistory } from '@/src/lib/playback-history';
+import { useContentWarningGate } from './content-warning-provider';
+import { useBeatArtworkUrl } from './beat-artwork';
 
 type PlayerState = {
   queue: PlayerBeat[]; currentIndex: number; context: PlaybackContext | null; shuffle: boolean;
@@ -67,6 +69,7 @@ function mediaArtwork(src?: string): MediaImage[] | undefined {
 }
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
+  const { requestContentWarning } = useContentWarningGate();
   const [state, dispatch] = useReducer(reducer, initialState);
   const stateRef = useRef(state); stateRef.current = state;
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -93,6 +96,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const pause = useCallback(() => audioRef.current?.pause(), []);
   const loadIndex = useCallback(async (queue: PlayerBeat[], index: number, context: PlaybackContext, shuffle = false, resumeAt = 0) => {
     const audio = audioRef.current; const beat = queue[index]; if (!audio || !beat) return;
+    if (beat.nsfw) {
+      const documentId = beat.sourceType === 'version' && beat.parentBeatId && beat.versionKey ? `${beat.parentBeatId}.${beat.versionKey}` : beat._id;
+      const approved = await requestContentWarning({ contentType: beat.sourceType === 'version' ? 'version' : 'beat', documentId, title: beat.title, reason: beat.nsfwReason, intendedAction: 'play this audio' });
+      if (!approved) return;
+    }
     saveCurrentHistory(false, true);
     requestRef.current?.abort(); const controller = new AbortController(); requestRef.current = controller;
     audio.pause(); audio.removeAttribute('src'); audio.load(); dispatch({ type: 'select', queue, index, context, shuffle });
@@ -116,7 +124,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       }
       await audio.play();
     } catch (error) { if (!controller.signal.aborted) dispatch({ type: 'error', message: error instanceof Error ? error.message : 'Playback is temporarily unavailable.' }); }
-  }, [saveCurrentHistory]);
+  }, [requestContentWarning, saveCurrentHistory]);
   const next = useCallback(async () => { const s = stateRef.current; if (s.currentIndex < s.queue.length - 1 && s.context) await loadIndex(s.queue, s.currentIndex + 1, s.context, s.shuffle); }, [loadIndex]);
   const previous = useCallback(async () => { const audio = audioRef.current; if (audio && audio.currentTime > 3) { audio.currentTime = 0; await play(); return; } const s = stateRef.current; if (s.currentIndex > 0 && s.context) await loadIndex(s.queue, s.currentIndex - 1, s.context, s.shuffle); }, [loadIndex, play]);
 
@@ -152,11 +160,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const replayQueue = useCallback(async () => { const s = stateRef.current; if (s.queue.length && s.context) await loadIndex(s.queue, 0, s.context, s.shuffle); }, [loadIndex]);
   const shuffleAgain = useCallback(async () => { const s = stateRef.current; if (s.context?.type !== 'main-library' || !s.queue.length) return; const queue = shuffledCopy(s.queue, s.queue); await loadIndex(queue, 0, { type: 'main-library', title: 'Main Library · Shuffled' }, true); }, [loadIndex]);
   const beat = state.queue[state.currentIndex] || null;
+  const approvedArtwork = useBeatArtworkUrl(beat);
 
   useEffect(() => {
     if (!('mediaSession' in navigator) || !('MediaMetadata' in window)) return;
     if (!beat) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; return; }
-    const artwork = mediaArtwork(beat.coverArtUrl || beat.lane?.fallbackCoverArtUrl);
+    const artwork = mediaArtwork(approvedArtwork);
     navigator.mediaSession.metadata = new MediaMetadata({
       title: beat.title,
       artist: beat.lane?.name || 'The Kitsune Protocol',
@@ -164,7 +173,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       artwork
     });
     return () => { navigator.mediaSession.metadata = null; };
-  }, [beat, state.context]);
+  }, [approvedArtwork, beat, state.context]);
 
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;

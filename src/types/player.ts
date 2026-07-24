@@ -9,8 +9,13 @@ export type PlayerBeat = {
   title: string;
   slug?: string;
   status?: string;
+  publishedAt?: string;
+  nsfw?: boolean;
+  nsfwReason?: string;
+  coverArt?: { _type?: string; asset?: { _type?: string; _ref?: string } };
   coverArtUrl?: string;
   lane?: {
+    _id?: string;
     name?: string;
     slug?: string;
     fallbackCoverArtUrl?: string;
@@ -22,7 +27,7 @@ export type PlayerBeat = {
   }>;
 };
 
-export type PlaybackContextType = 'main-library' | 'all-beats' | 'release' | 'manual' | 'context';
+export type PlaybackContextType = 'main-library' | 'all-beats' | 'release' | 'lane' | 'manual' | 'context';
 export type RepeatMode = 'off' | 'all' | 'one';
 
 export type PlaybackContext = {
@@ -33,8 +38,22 @@ export type PlaybackContext = {
 export type PlayerRelease = {
   _id: string;
   title: string;
+  slug?: string;
   releaseType?: string;
   coverArtUrl?: string;
+  coverArt?: { _type?: string; asset?: { _type?: string; _ref?: string } };
+  nsfw?: boolean;
+  nsfwReason?: string;
+  beats: PlayerBeat[];
+};
+
+export type PlayerLane = {
+  _id: string;
+  name: string;
+  slug?: string;
+  plainDescription?: string;
+  coverArtUrl?: string;
+  accentColor: string;
   beats: PlayerBeat[];
 };
 

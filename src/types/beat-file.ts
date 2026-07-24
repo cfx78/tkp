@@ -8,7 +8,7 @@ export type BeatFile = Omit<PlayerBeat, 'lane' | 'releases'> & {
   relatedFixations: Array<{ _id: string; title: string; slug?: string; shortDescription?: string }>;
   relatedLogs: Array<{ _id: string; title?: string; body?: string; bullets?: string[]; logType?: string; publishedAt?: string }>;
   relatedLinks: Array<{ _id: string; title?: string; url: string; platformAuto?: string; platformOverride?: string; note?: string }>;
-  relatedPlaylists: Array<{ _id: string; title: string; slug?: string; spotifyUrl?: string; appleMusicUrl?: string; youtubeMusicUrl?: string; shortNote?: string }>;
+  relatedPlaylists: Array<{ _id: string; title: string; slug?: string; spotifyUrl?: string; spotifyEmbedUrl?: string; appleMusicUrl?: string; youtubeMusicUrl?: string; shortNote?: string }>;
   relatedQuotes: Array<{ _id: string; quoteText: string; person: string; sourceTitle?: string; sourceUrl?: string }>;
   versions: Array<{ _key: string; title: string; note?: string; versionType?: string; createdAt?: string; nsfw?: boolean; nsfwReason?: string; audioAvailable: boolean }>;
 };
