@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type CSSProperties } from 'react';
-import { ListMusic, LoaderCircle, Pause, Play, SkipBack, SkipForward, X } from 'lucide-react';
+import { ListMusic, LoaderCircle, Pause, Play, Repeat, Repeat1, Shuffle, SkipBack, SkipForward, X } from 'lucide-react';
 import { ProtocolLabel } from './presentation-primitives';
 import { usePlayer } from './player-provider';
 import { useBeatArtworkUrl } from './beat-artwork';
@@ -36,6 +36,7 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
   } as CSSProperties;
   const cover = useBeatArtworkUrl(beat);
   const progress = player.duration > 0 ? Math.min(100, Math.max(0, (player.currentTime / player.duration) * 100)) : 0;
+  const RepeatIcon = player.repeatMode === 'one' ? Repeat1 : Repeat;
 
   useEffect(() => {
     exitRef.current?.focus();
@@ -63,7 +64,10 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => { document.removeEventListener('keydown', handleKeyDown); document.body.style.overflow = previousOverflow; };
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [onClose]);
 
   return (
@@ -74,35 +78,41 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
       aria-label="Listening Mode"
       aria-live="off"
       style={style}
-      className={`listening-mode fixed inset-0 z-[100] overflow-x-hidden overflow-y-auto bg-[#020307] text-[var(--text-primary)] ${player.isPlaying ? 'is-playing' : 'is-quiet'}`}
+      className={`listening-mode fixed inset-0 z-[100] overflow-hidden bg-[#020307] text-[var(--text-primary)] ${player.isPlaying ? 'is-playing' : 'is-quiet'}`}
     >
+      <div aria-hidden="true" className="listening-mode__environment" />
       <div aria-hidden="true" className="listening-mode__ambient" />
-      <div className="relative mx-auto flex min-h-full w-full max-w-6xl flex-col px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-8">
-        <header className="sticky top-[env(safe-area-inset-top)] z-10 flex min-h-11 shrink-0 items-center justify-between gap-4 bg-gradient-to-b from-[#020307] via-[#020307]/95 to-transparent pb-2">
-          <ProtocolLabel>Listening Mode</ProtocolLabel>
+
+      <div className="listening-mode__frame">
+        <header className="listening-mode__header">
+          <div className="min-w-0">
+            <ProtocolLabel>Listening Mode</ProtocolLabel>
+            <span lang="ja" className="listening-mode__katakana">キツネ・プロトコル</span>
+          </div>
           <button ref={exitRef} type="button" onClick={onClose} className="focusable-surface inline-flex min-h-11 items-center gap-2 px-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]" aria-label="Exit Listening Mode">
             <span>Exit</span><X aria-hidden="true" className="h-5 w-5" />
           </button>
         </header>
 
         {beat ? (
-          <div className="listening-mode__composition mx-auto grid w-full flex-1 content-center items-center gap-6 py-5 md:grid-cols-[minmax(0,1.15fr)_minmax(17rem,0.85fr)] md:gap-12 md:py-8">
-            <div className="listening-mode__art-stage relative mx-auto w-full max-w-[min(72vw,30rem)] md:max-w-[min(42vw,34rem)]">
-              <div className="listening-mode__halo absolute -inset-[12%] -z-20" aria-hidden="true" />
-              <div className="aspect-square overflow-hidden rounded-[var(--radius-artwork)] bg-[var(--bg-2)] shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
+          <div className="listening-mode__composition">
+            <div className="listening-mode__art-stage">
+              <div className="listening-mode__halo" aria-hidden="true" />
+              {cover ? <span className="listening-mode__art-echo" style={{ backgroundImage: `url(${JSON.stringify(cover)})` }} aria-hidden="true" /> : null}
+              <div className="listening-mode__cover">
                 {cover ? <img src={cover} alt={`Artwork for ${beat.title}`} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><ListMusic aria-hidden="true" className="h-16 w-16 text-white/15" /></div>}
               </div>
             </div>
 
-            <section className="min-w-0 md:self-center" aria-labelledby="listening-title">
+            <section className="listening-mode__details" aria-labelledby="listening-title">
               {beat.sourceType === 'version' ? <ProtocolLabel>Context · {beat.versionType || 'Version'}</ProtocolLabel> : <ProtocolLabel>Main Beat</ProtocolLabel>}
-              <h1 id="listening-title" className="mt-3 break-words text-[clamp(1.75rem,7vw,3.75rem)] font-semibold leading-[1.04] tracking-[-0.035em]">{beat.title}</h1>
-              <p className="type-small mt-3 break-words">
+              <h1 id="listening-title" className="listening-mode__title">{beat.title}</h1>
+              <p className="listening-mode__metadata type-small">
                 {beat.lane?.name || 'Unassigned lane'}{beat.sourceType === 'version' && beat.parentBeatTitle ? ` · From ${beat.parentBeatTitle}` : ''}
               </p>
-              <p className="type-protocol-label mt-2 text-[9px]">{player.isLoading ? 'Loading' : player.isPlaying ? 'Playing' : player.isQueueComplete ? 'Complete' : 'Paused'}</p>
+              <p className="listening-mode__status type-protocol-label">{player.isLoading ? 'Loading' : player.isPlaying ? 'Playing' : player.isQueueComplete ? 'Complete' : 'Paused'}</p>
 
-              <div className="mt-7">
+              <div className="listening-mode__progress">
                 <div className="relative h-5">
                   <div aria-hidden="true" className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-white/15"><span className="block h-full bg-[var(--listening-accent)]" style={{ width: `${progress}%` }} /></div>
                   <input type="range" min={0} max={player.duration || 0} step={0.1} value={Math.min(player.currentTime, player.duration || 0)} onChange={(event) => player.seek(Number(event.target.value))} disabled={!player.duration} aria-label="Playback progress" className="absolute inset-x-0 -top-3 h-11 w-full cursor-pointer opacity-0 disabled:cursor-not-allowed" />
@@ -110,13 +120,16 @@ export function ListeningMode({ onClose }: ListeningModeProps) {
                 <div className="flex justify-between type-numeric"><span>{formatTime(player.currentTime)}</span><span>{formatTime(player.duration)}</span></div>
               </div>
 
-              <div className="mt-5 flex items-center justify-center gap-5 sm:gap-7 md:justify-start">
+              <div className="listening-mode__controls">
+                <button type="button" onClick={player.cycleRepeatMode} className={`listening-mode__mode-control focusable-surface ${player.repeatMode === 'off' ? '' : 'is-active'}`} aria-label={`Repeat ${player.repeatMode}`} aria-pressed={player.repeatMode !== 'off'}><RepeatIcon aria-hidden="true" className="h-5 w-5" /><span className="type-numeric text-[8px]">{player.repeatMode}</span></button>
                 <button type="button" onClick={() => void player.previous()} disabled={!player.hasPrevious && player.currentTime <= 3} className="icon-control focusable-surface h-12 w-12 border-white/15" aria-label="Previous Beat"><SkipBack aria-hidden="true" className="h-6 w-6" fill="currentColor" /></button>
                 <button type="button" onClick={() => void player.togglePlayback()} disabled={player.isLoading} className="focusable-surface grid h-16 w-16 place-items-center rounded-[var(--radius-interactive)] border border-white/20 bg-[var(--text-primary)] text-[var(--bg-0)] shadow-[0_0_32px_rgba(var(--listening-accent-rgb)/0.14)] disabled:opacity-50" aria-label={player.isPlaying ? 'Pause' : 'Play'}>
                   {player.isLoading ? <LoaderCircle aria-hidden="true" className="h-6 w-6 animate-spin" /> : player.isPlaying ? <Pause aria-hidden="true" className="h-6 w-6" fill="currentColor" /> : <Play aria-hidden="true" className="ml-0.5 h-6 w-6" fill="currentColor" />}
                 </button>
                 <button type="button" onClick={() => void player.next()} disabled={!player.hasNext} className="icon-control focusable-surface h-12 w-12 border-white/15" aria-label="Next Beat"><SkipForward aria-hidden="true" className="h-6 w-6" fill="currentColor" /></button>
+                <span className={`listening-mode__mode-control ${player.shuffle ? 'is-active' : ''}`} aria-label={player.shuffle ? 'Queue shuffled' : 'Queue not shuffled'}><Shuffle aria-hidden="true" className="h-5 w-5" /><span className="type-numeric text-[8px]">{player.shuffle ? 'on' : 'off'}</span></span>
               </div>
+
               {player.error ? <p className="type-small mt-5 text-[var(--danger)]">Playback is temporarily unavailable. You can exit Listening Mode and try again.</p> : null}
             </section>
           </div>

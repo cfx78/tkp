@@ -28,6 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="public-app-shell min-h-screen bg-transparent text-[var(--text-primary)]">
+      <div className="shell-environment" aria-hidden="true" />
       <header className={clsx('site-header mx-auto flex min-h-[var(--shell-header-height)] w-full max-w-[var(--shell-max)] items-center px-[var(--page-inset-mobile)] pt-[env(safe-area-inset-top)]', isHome && 'site-header--home')} aria-label="Site identity">
         <Link href="/" className="focusable-surface group inline-flex min-h-11 min-w-0 max-w-[calc(100%-2.5rem)] items-center gap-2.5" aria-label="The Kitsune Protocol, Home">
           <span className="relative grid h-8 w-8 shrink-0 place-items-center text-[var(--text-primary)]" aria-hidden="true">
@@ -42,7 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className={clsx(
-        'mx-auto flex min-h-[calc(100vh-var(--shell-header-height))] max-w-[var(--shell-max)] flex-col px-[var(--page-inset-mobile)] pt-4 sm:pt-7',
+        'shell-content-frame mx-auto flex min-h-[calc(100vh-var(--shell-header-height))] max-w-[var(--shell-max)] flex-col px-[var(--page-inset-mobile)] pt-4 sm:pt-7',
         beat && !isNowPlaying
           ? 'pb-[calc(var(--bottom-nav-height)+var(--safe-area-bottom)+var(--mini-player-clearance))]'
           : 'pb-[calc(var(--bottom-nav-height)+var(--safe-area-bottom)+2rem)]'
